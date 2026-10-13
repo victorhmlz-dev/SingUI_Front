@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sign_in_title">Welcome Back!</string>
+    <string name="sign_in_subtitle">Sign in to your account</string>
+    <string name="sign_up_title">Create Account</string>
+    <string name="sign_up_subtitle">Sign up to get started</string>
+    <string name="change_password_title">Change Password</string>
+    <string name="change_password_subtitle">Choose a new, secure password</string>
+
+    <string name="hint_full_name">Full name</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Confirm password</string>
+    <string name="hint_current_password">Current password</string>
+    <string name="hint_new_password">New password</string>
+    <string name="hint_confirm_new_password">Confirm new password</string>
+    <string name="password_helper">At least 8 characters</string>
+
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="accept_terms">I agree to the Terms and Privacy Policy</string>
+    <string name="or">or</string>
+    <string name="google" translatable="false">Google</string>
+    <string name="facebook" translatable="false">Facebook</string>
+
+    <string name="action_sign_in">Sign In</string>
+    <string name="action_sign_up">Sign Up</string>
+    <string name="action_update_password">Update Password</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_back">Back</string>
+
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="have_account">Already have an account?</string>
+</resources>
