@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           styleClass="auth-root" stylesheets="@auth.css"
+           prefWidth="900" prefHeight="820">
+
+    <VBox alignment="CENTER" maxWidth="440" maxHeight="-Infinity">
+
+        <Label styleClass="auth-title" text="Create Account"/>
+        <Label styleClass="auth-subtitle" text="Sign up to get started"/>
+
+        <VBox styleClass="auth-card">
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-person"/>
+                <TextField fx:id="firstNameField" promptText="First Name" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-person"/>
+                <TextField fx:id="lastNameField" promptText="Last Name" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-email"/>
+                <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-lock"/>
+                <PasswordField fx:id="passwordField" promptText="Password" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-lock"/>
+                <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-map"/>
+                <PasswordField fx:id="stateField" promptText="State where you live" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-city"/>
+                <PasswordField fx:id="cityField" promptText="In which city?" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-home"/>
+                <PasswordField fx:id="streetField" promptText="Street address" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <HBox styleClass="auth-input">
+                <Region styleClass="icon, icon-zip"/>
+                <PasswordField fx:id="zipField" promptText="Zip code" HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <CheckBox fx:id="termsCheckBox" styleClass="auth-checkbox"
+                      text="I agree to the Terms and Privacy Policy"/>
+
+            <Button fx:id="signUpButton" styleClass="auth-button" text="Sign Up"
+                    maxWidth="Infinity" defaultButton="true"/>
+
+        </VBox>
+
+        <HBox styleClass="auth-footer">
+            <Label text="Already have an account?"/>
+            <Hyperlink fx:id="signInLink" text="Sign In"/>
+        </HBox>
+    </VBox>
+</StackPane>
