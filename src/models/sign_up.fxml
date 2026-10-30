@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
@@ -36,35 +37,53 @@
                 <Region styleClass="icon, icon-email"/>
                 <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
             </HBox>
-
+            
             <HBox styleClass="auth-input">
                 <Region styleClass="icon, icon-lock"/>
-                <PasswordField fx:id="passwordField" promptText="Password" HBox.hgrow="ALWAYS"/>
+                <StackPane alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <PasswordField fx:id="passwordField" promptText="Password"/>
+                    <TextField fx:id="passwordVisibleField" promptText="Password"
+                               managed="false" visible="false"/>
+                </StackPane>
+                <ToggleButton fx:id="passwordToggle" styleClass="auth-eye-button" focusTraversable="false">
+                    <graphic>
+                        <Region styleClass="icon, icon-eye"/>
+                    </graphic>
+                </ToggleButton>
             </HBox>
-
+            
             <HBox styleClass="auth-input">
                 <Region styleClass="icon, icon-lock"/>
-                <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" HBox.hgrow="ALWAYS"/>
+                <StackPane alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <PasswordField fx:id="passwordField" promptText="Confirm Password"/>
+                    <TextField fx:id="passwordVisibleField" promptText="Confirm Password"
+                               managed="false" visible="false"/>
+                </StackPane>
+                <ToggleButton fx:id="passwordToggle" styleClass="auth-eye-button" focusTraversable="false">
+                    <graphic>
+                        <Region styleClass="icon, icon-eye"/>
+                    </graphic>
+                </ToggleButton>
             </HBox>
 
             <HBox styleClass="auth-input">
                 <Region styleClass="icon, icon-map"/>
-                <PasswordField fx:id="stateField" promptText="State where you live" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="stateField" promptText="State where you live" HBox.hgrow="ALWAYS"/>
             </HBox>
 
             <HBox styleClass="auth-input">
                 <Region styleClass="icon, icon-city"/>
-                <PasswordField fx:id="cityField" promptText="In which city?" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="cityField" promptText="In which city?" HBox.hgrow="ALWAYS"/>
             </HBox>
 
             <HBox styleClass="auth-input">
                 <Region styleClass="icon, icon-home"/>
-                <PasswordField fx:id="streetField" promptText="Street address" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="streetField" promptText="Street address" HBox.hgrow="ALWAYS"/>
             </HBox>
 
             <HBox styleClass="auth-input">
                 <Region styleClass="icon, icon-zip"/>
-                <PasswordField fx:id="zipField" promptText="Zip code" HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="zipField" promptText="Zip code" HBox.hgrow="ALWAYS"/>
             </HBox>
 
             <CheckBox fx:id="termsCheckBox" styleClass="auth-checkbox"

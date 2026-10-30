@@ -1,0 +1,30 @@
+package controllers;
+
+import java.io.IOException;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+
+public class Home {
+
+    @FXML private Label welcomeLabel;
+    @FXML private Button signOutButton;
+
+    @FXML
+    public void initialize() {
+        signOutButton.setOnAction(event -> signOut());
+    }
+
+    public void setUserName(String name) {
+        welcomeLabel.setText("Welcome, " + name + "!");
+    }
+
+    private void signOut() {
+        try {
+            Navigator.goTo(signOutButton, "SignIn.fxml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}

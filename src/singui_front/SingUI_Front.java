@@ -19,7 +19,7 @@ public class SingUI_Front extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(
-            getClass().getResource("/models/change_password.fxml")
+            getClass().getResource("/models/home.fxml")
         );
 
         stage.setTitle("SingUI");
