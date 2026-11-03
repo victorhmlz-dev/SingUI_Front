@@ -30,3 +30,10 @@ Client project repository
     - Al momento de escribir
     - Al momento de pulsar el botón fundamental.
 
+# CAMBIOS AL CSS:
+
+    - Se modificaron y añadieron estilos:
+        auth-helper
+        eye-button
+        eye-button.icon
+
