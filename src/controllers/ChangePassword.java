@@ -103,7 +103,7 @@ public class ChangePassword {
     }
 
     public String getEmail() {
-
+        return "";
     }
 
     private void showError(String message) {

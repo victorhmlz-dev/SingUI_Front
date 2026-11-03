@@ -15,7 +15,7 @@ public class SingUI_Front extends Application {
 
         primaryStage = stage;
 
-        changeView("sign_in");
+        changeView("change_password");
 
         primaryStage.setTitle("SingUI");
         primaryStage.show();
