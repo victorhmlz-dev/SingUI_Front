@@ -48,6 +48,10 @@
     -fx-border-color: #667eea;
 }
 
+.auth-input.error {
+    -fx-border-color: #d93025;
+}
+
 .auth-input .text-field {
     -fx-background-color: transparent;
     -fx-padding: 0;
