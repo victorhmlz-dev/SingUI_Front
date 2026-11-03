@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controllers.SignIn"
            styleClass="auth-root" stylesheets="@auth.css"
            prefWidth="900" prefHeight="680">
 
@@ -21,28 +22,33 @@
 
         <VBox styleClass="auth-card">
 
-            <HBox styleClass="auth-input">
+            <HBox fx:id="emailContainer" styleClass="auth-input">
                 <Region styleClass="icon, icon-email"/>
                 <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
             </HBox>
 
-            <HBox styleClass="auth-input">
+            <HBox fx:id="passwordContainer" styleClass="auth-input">
                 <Region styleClass="icon, icon-lock"/>
                 <PasswordField fx:id="passwordField" promptText="Password" HBox.hgrow="ALWAYS"/>
             </HBox>
 
             <HBox alignment="CENTER_RIGHT">
-                <Hyperlink fx:id="forgotPasswordLink" styleClass="auth-link" text="Forgot Password?"/>
+                <Hyperlink fx:id="forgotPasswordLink" styleClass="auth-link" text="Forgot Password?"
+                           onAction="#handleForgotPassword"/>
             </HBox>
 
+            <Label fx:id="errorLabel" styleClass="auth-error" managed="false" visible="false"/>
+
             <Button fx:id="signInButton" styleClass="auth-button" text="Sign In"
-                    maxWidth="Infinity" defaultButton="true"/>
+                    maxWidth="Infinity" defaultButton="true"
+                    onAction="#handleSignIn"/>
 
         </VBox>
 
         <HBox styleClass="auth-footer">
             <Label text="Don't have an account?"/>
-            <Hyperlink fx:id="signUpLink" text="Sign Up"/>
+            <Hyperlink fx:id="signUpLink" text="Sign Up"
+                       onAction="#handleSignUp"/>
         </HBox>
     </VBox>
 </StackPane>
