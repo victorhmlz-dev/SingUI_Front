@@ -1,2 +1,5 @@
 /build/
 /dist/
+
+# Configuracion local de NetBeans (rutas y ajustes de cada equipo)
+/nbproject/private/

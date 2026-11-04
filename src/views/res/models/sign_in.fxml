@@ -48,7 +48,7 @@
         <HBox styleClass="auth-footer">
             <Label text="Don't have an account?"/>
             <Hyperlink fx:id="signUpLink" text="Sign Up"
-                       onAction="#handleSignUp"/>
+                       onAction="#goToSignUp"/>
         </HBox>
     </VBox>
 </StackPane>

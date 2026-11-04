@@ -121,7 +121,7 @@ public class SignIn {
     @FXML
     public void goToSignUp(ActionEvent event) {
         // Cambia "/sign_up.fxml" por la ruta de tu vista de registro
-        navigateTo("/sign_up.fxml");
+        navigateTo("/views/res/models/sign_up.fxml");
     }
  
     // Muestra el mensaje de error en la interfaz
