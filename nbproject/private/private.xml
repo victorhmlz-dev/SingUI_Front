@@ -3,14 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/src/models/sign_up.fxml</file>
-            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/frontJavafx/sign_in.fxml</file>
-            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/src/models/change_password.fxml</file>
-            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/src/controllers/SignIn.java</file>
-            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/src/SignUI_Front/client/UserRESTClient.java</file>
-            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/src/singui_front/SingUI_Front.java</file>
-            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/src/models/Session.java</file>
-            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/src/models/User.java</file>
+            <file>file:/C:/Users/javi/Documents/Project%20Sign%20Up/SignUI_Front/SingUI_Front/src/controllers/signInController.java</file>
         </group>
     </open-files>
 </project-private>
