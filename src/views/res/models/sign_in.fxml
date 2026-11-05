@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-           fx:controller="controllers.signInController"
+           fx:controller="controllers.SignInController"
            styleClass="auth-root" stylesheets="@auth.css"
            prefWidth="900" prefHeight="680">
 
