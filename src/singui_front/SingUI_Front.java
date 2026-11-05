@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package singui_front;
 
 import javafx.application.Application;
@@ -10,28 +6,33 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- *
- * @author Victor
- */
 public class SingUI_Front extends Application {
+
+    private static Stage primaryStage;
 
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(
-            getClass().getResource("/models/sign_in.fxml")
-        );
 
-        stage.setTitle("SingUI");
-        stage.setScene(new Scene(root));
-        stage.show();
+        primaryStage = stage;
+
+        changeView("sign_in");
+
+        primaryStage.setTitle("SingUI");
+        primaryStage.show();
     }
 
-    /**
-     * @param args the command line arguments
-     */
+    public static void changeView(String view) throws Exception {
+
+        Parent root = FXMLLoader.load(
+            SingUI_Front.class.getResource(
+                "../views/res/models/" + view + ".fxml"
+            )
+        );
+
+        primaryStage.setScene(new Scene(root));
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
-    
 }

@@ -71,6 +71,11 @@
     -fx-font-size: 13px;
 }
 
+.auth-success {
+    -fx-text-fill: #1e8e3e;
+    -fx-font-size: 13px;
+}
+
 .auth-checkbox {
     -fx-text-fill: #757575;
     -fx-font-size: 13px;
