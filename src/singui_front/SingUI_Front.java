@@ -12,16 +12,9 @@ public class SingUI_Front extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-<<<<<<< HEAD
-        Parent root = FXMLLoader.load(
-            getClass().getResource("/models/home.fxml")
-        );
-=======
->>>>>>> origin/main
-
         primaryStage = stage;
 
-        changeView("home");
+        changeView("sign_up");
 
         primaryStage.setTitle("SingUI");
         primaryStage.show();
