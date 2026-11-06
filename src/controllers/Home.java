@@ -151,7 +151,31 @@ public class Home {
     @FXML private void handleDiscover(ActionEvent event) { }
     @FXML private void handleNotifications(ActionEvent event) { }
     @FXML private void handleProfile(ActionEvent event) { }
-    @FXML private void handleLogout(ActionEvent event) { }
+    @FXML
+private void handleLogout(ActionEvent event) {
+    String fxmlPath = "/views/res/models/sign_in.fxml";
+    URL resource = getClass().getResource(fxmlPath);
+
+    if (resource == null) {
+        fxmlPath = "/views/res/models/signIn.fxml";
+        resource = getClass().getResource(fxmlPath);
+    }
+
+    if (resource == null) {
+        showErrorAlert("Error de Navegación", "No se encontró el archivo FXML en /models/.");
+        return;
+    }
+
+    try {
+        Parent root = FXMLLoader.load(resource);
+        // MenuItem no es un Node, por lo que obtenemos el Stage a través del userMenu
+        Stage stage = (Stage) userMenu.getScene().getWindow();
+        stage.setScene(new Scene(root));
+    } catch (IOException e) {
+        e.printStackTrace();
+        showErrorAlert("Error", "No se pudo volver a la pantalla de inicio de sesión.");
+    }
+}
     @FXML private void handleDemo(ActionEvent event) { }
     @FXML private void handleLearnMore(ActionEvent event) { }
     @FXML private void handleKnowMore(ActionEvent event) { }
