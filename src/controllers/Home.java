@@ -6,6 +6,8 @@ import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseEvent;
@@ -21,6 +23,10 @@ public class Home {
     @FXML private ComboBox<String> periodCombo;
     @FXML private AreaChart<String, Number> activityChart;
     @FXML private NumberAxis yAxis;
+
+    // Componentes del menú de usuario en la barra superior
+    @FXML private MenuButton userMenu;
+    @FXML private Label avatarInitials;
 
     @FXML
     private void initialize() {
@@ -45,6 +51,36 @@ public class Home {
         });
 
         loadChart();
+    }
+
+    /**
+     * Carga y establece los datos del usuario autenticado en la interfaz.
+     * 
+     * @param fullName Nombre completo o identificador del usuario.
+     */
+    public void setUserData(String fullName) {
+        if (fullName == null || fullName.trim().isEmpty()) {
+            return;
+        }
+
+        // Actualizar el texto del menú
+        if (userMenu != null) {
+            userMenu.setText(fullName);
+        }
+
+        // Generar y actualizar las iniciales en el avatar
+        if (avatarInitials != null) {
+            String initials = extractInitials(fullName);
+            avatarInitials.setText(initials);
+        }
+    }
+
+    private String extractInitials(String name) {
+        String[] parts = name.trim().split("\\s+");
+        if (parts.length >= 2) {
+            return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
+        }
+        return name.substring(0, Math.min(2, name.length())).toUpperCase();
     }
 
     private void loadChart() {
