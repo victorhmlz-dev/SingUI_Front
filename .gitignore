@@ -1,2 +1,29 @@
+# Compilación (NetBeans / Ant)
 /build/
 /dist/
+
+# Configuración local de NetBeans (propia de cada equipo)
+/nbproject/private/
+
+# Documentos de Word
+*.doc
+*.docx
+*.docm
+*.dot
+*.dotx
+~$*
+
+# Archivos compilados y logs
+*.class
+*.log
+hs_err_pid*
+
+# Sistema operativo
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Otros IDEs
+.idea/
+*.iml
+.vscode/

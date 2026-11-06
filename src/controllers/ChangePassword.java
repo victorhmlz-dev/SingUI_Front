@@ -17,6 +17,9 @@ import javafx.scene.control.ToggleButton;
  */
 public class ChangePassword {
 
+    private static final String ERROR_STYLE = "auth-error";
+    private static final String SUCCESS_STYLE = "auth-success";
+
     // UI FIELDS
     @FXML
     private PasswordField currentPasswordField;
@@ -49,206 +52,73 @@ public class ChangePassword {
 
     @FXML
     public void initialize() {
-        clearError();
-        strengthLabel.setText("");
-
-        // Validar mientras el usuario escribe.
-        newPasswordField.textProperty().addListener(
-            (observable, oldValue, newValue) -> {
-                updatePasswordStrength(newValue);
-            }
-        );
-
-        // Botón del ojo para mostrar/ocultar la contraseña.
-        setupShowPassword(currentPasswordField,
-                currentPasswordVisibleField, currentPasswordToggle);
-        setupShowPassword(newPasswordField,
-                newPasswordVisibleField, newPasswordToggle);
+        //Inicializa la pantalla
     }
 
-    /**
-     * Sincroniza el PasswordField con un TextField visible y alterna
-     * entre ambos cuando se pulsa el botón del ojo.
-     */
-    private void setupShowPassword(PasswordField hiddenField,
-            TextField visibleField, ToggleButton toggle) {
+    private void setupShowPassword(){
+        /**
+        * Sincroniza el PasswordField con un TextField visible y alterna
+        * entre ambos cuando se pulsa el botón del ojo.
+        */
 
-        visibleField.textProperty()
-                .bindBidirectional(hiddenField.textProperty());
-
-        toggle.selectedProperty().addListener(
-            (observable, oldValue, show) -> {
-                TextField from = show ? hiddenField : visibleField;
-                TextField to = show ? visibleField : hiddenField;
-
-                visibleField.setVisible(show);
-                visibleField.setManaged(show);
-                hiddenField.setVisible(!show);
-                hiddenField.setManaged(!show);
-
-                if (from.isFocused()) {
-                    to.requestFocus();
-                    to.positionCaret(to.getText().length());
-                }
-            }
-        );
     }
 
-    /**
-     * Comprueba los requisitos mínimos de contraseña
-     * y los caracteres permitidos.
-     */
-    private boolean isValidPassword(String password) {
-
-        if (password == null || password.length() < 8) {
-            return false;
-        }
-
-        boolean hasUppercase = password.matches(".*[A-Z].*");
-        boolean hasLowercase = password.matches(".*[a-z].*");
-        boolean hasNumber = password.matches(".*[0-9].*");
-
-        // Solo se permiten letras, números y estos caracteres especiales.
-        boolean allowedCharacters =
-                password.matches("[a-zA-Z0-9._@$*-]+");
-
-        return hasUppercase
-                && hasLowercase
-                && hasNumber
-                && allowedCharacters;
+    
+    private boolean isValidPassword() {
+        /**
+        * Comprueba los requisitos mínimos de contraseña
+        * y los caracteres permitidos.
+        */
+        
+        return false;
     }
 
-    /**
-     * Calcula la fortaleza: Weak, Medium o Strong.
-     */
-    private String getPasswordStrength(String password) {
-
-        if (!isValidPassword(password)) {
-            return "Invalid";
-        }
-
-        long uppercaseCount = password.chars()
-                .filter(Character::isUpperCase)
-                .count();
-
-        long lowercaseCount = password.chars()
-                .filter(Character::isLowerCase)
-                .count();
-
-        long numberCount = password.chars()
-                .filter(Character::isDigit)
-                .count();
-
-        boolean additionalRequirement1 =
-                uppercaseCount > 1
-                && lowercaseCount > 1
-                && numberCount > 1;
-
-        boolean additionalRequirement2 =
-                password.matches(".*[._@$-].*");
-
-        if (additionalRequirement1 && additionalRequirement2) {
-            return "Strong";
-        }
-
-        if (additionalRequirement1 || additionalRequirement2) {
-            return "Medium";
-        }
-
-        return "Weak";
+    private String getPasswordStrength() {
+        // Calcula la fortaleza del password
+        return null;
     }
 
-    /**
+
+    private void updatePasswordStrength() {
+     /**
      * Actualiza la fortaleza en tiempo real.
      */
-    private void updatePasswordStrength(String password) {
-
-        String strength = getPasswordStrength(password);
-
-        switch (strength) {
-            case "Weak" ->
-                strengthLabel.setText("Strength: Weak");
-
-            case "Medium" ->
-                strengthLabel.setText("Strength: Medium");
-
-            case "Strong" ->
-                strengthLabel.setText("Strength: Strong");
-
-            default ->
-                strengthLabel.setText(
-                    password == null || password.isEmpty()
-                        ? ""
-                        : "La contraseña no cumple los requisitos."
-                );
-        }
     }
 
-    /**
-     * Acción del botón Change Password.
-     */
     @FXML
     private void handleChangePassword() {
+        /**
+        * Acción del botón Change Password.
+        */
 
-        String currentPassword = currentPasswordField.getText();
-        String newPassword = newPasswordField.getText();
-        String confirmation = confirmPasswordField.getText();
-
-        if (currentPassword.isBlank()
-                || newPassword.isBlank()
-                || confirmation.isBlank()) {
-
-            showError("Todos los campos son obligatorios.");
-            return;
-        }
-
-        if (!isValidPassword(newPassword)) {
-            showError("La contraseña no cumple los requisitos mínimos.");
-            return;
-        }
-
-        if (currentPassword.equals(newPassword)) {
-            showError("La nueva contraseña debe ser diferente de la actual.");
-            return;
-        }
-
-        if (!newPassword.equals(confirmation)) {
-            showError("Las contraseñas nuevas no coinciden.");
-            return;
-        }
-
-        // Pendiente: comprobar la contraseña actual en el backend
-        // y guardar el hash de la nueva contraseña.
-
-        showError("Validación correcta. Ya puedes actualizar la contraseña.");
     }
 
     @FXML
     private void handleCancel() {
-        currentPasswordField.clear();
-        newPasswordField.clear();
-        confirmPasswordField.clear();
-        clearError();
-        strengthLabel.setText("");
+
     }
 
     public void setEmail(String email) {
-        this.email = email;
+
     }
 
     public String getEmail() {
-        return email;
-    }
-    
-    private void showError(String message) {
-        messageLabel.setText(message);
-        messageLabel.setManaged(true);
-        messageLabel.setVisible(true);
+        return "";
     }
 
-    private void clearError() {
-        messageLabel.setText("");
-        messageLabel.setManaged(false);
-        messageLabel.setVisible(false);
+    private void showError(String message) {
+
+    }
+
+    private void showSuccess(String message) {
+
+    }
+
+    private void showMessage(String message, String styleClass) {
+
+    }
+
+    private void clearMessage() {
+
     }
 }

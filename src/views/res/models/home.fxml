@@ -1,0 +1,368 @@
+<<<<<<< HEAD:src/models/home.fxml
+package controllers;
+ 
+import java.io.IOException;
+ 
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+ 
+public class Home {
+ 
+    @FXML private Label welcomeLabel;
+    @FXML private Button signOutButton;
+ 
+    @FXML
+    public void initialize() {
+        signOutButton.setOnAction(event -> signOut());
+    }
+ 
+    public void setUserName(String name) {
+        welcomeLabel.setText("Welcome, " + name + "!");
+    }
+ 
+    private void signOut() {
+        try {
+            Navigator.goTo(signOutButton, "SignIn.fxml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+ 
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.scene.chart.AreaChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.shape.SVGPath?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.Home"
+            styleClass="home-root" stylesheets="@home.css"
+            prefWidth="1440" prefHeight="960">
+
+    <!-- SIDEBAR -->
+    <left>
+        <StackPane styleClass="sidebar" prefWidth="200" minWidth="200">
+
+            <VBox styleClass="sidebar-content">
+
+                <!-- Logo -->
+                <VBox styleClass="logo-box">
+                    <Region styleClass="icon, icon-restaurant, logo-icon"/>
+                    <Label styleClass="logo-text" text="RestauPro"/>
+                </VBox>
+
+                <!-- Navigation -->
+                <fx:define>
+                    <ToggleGroup fx:id="navGroup"/>
+                </fx:define>
+
+                <VBox styleClass="nav-box">
+                    <ToggleButton fx:id="navHome" styleClass="nav-item" text="Inicio"
+                                  toggleGroup="$navGroup" selected="true" maxWidth="Infinity"
+                                  onAction="#handleNavigation">
+                        <graphic><Region styleClass="icon, nav-icon, icon-home"/></graphic>
+                    </ToggleButton>
+                    <ToggleButton fx:id="navRestaurants" styleClass="nav-item" text="Restaurantes"
+                                  toggleGroup="$navGroup" maxWidth="Infinity"
+                                  onAction="#handleNavigation">
+                        <graphic><Region styleClass="icon, nav-icon, icon-store"/></graphic>
+                    </ToggleButton>
+                    <ToggleButton fx:id="navReservations" styleClass="nav-item" text="Reservas"
+                                  toggleGroup="$navGroup" maxWidth="Infinity"
+                                  onAction="#handleNavigation">
+                        <graphic><Region styleClass="icon, nav-icon, icon-calendar"/></graphic>
+                    </ToggleButton>
+                    <ToggleButton fx:id="navOrders" styleClass="nav-item" text="Pedidos"
+                                  toggleGroup="$navGroup" maxWidth="Infinity"
+                                  onAction="#handleNavigation">
+                        <graphic><Region styleClass="icon, nav-icon, icon-cloche"/></graphic>
+                    </ToggleButton>
+                    <ToggleButton fx:id="navReports" styleClass="nav-item" text="Reportes"
+                                  toggleGroup="$navGroup" maxWidth="Infinity"
+                                  onAction="#handleNavigation">
+                        <graphic><Region styleClass="icon, nav-icon, icon-chart"/></graphic>
+                    </ToggleButton>
+                    <ToggleButton fx:id="navSettings" styleClass="nav-item" text="Configuración"
+                                  toggleGroup="$navGroup" maxWidth="Infinity"
+                                  onAction="#handleNavigation">
+                        <graphic><Region styleClass="icon, nav-icon, icon-settings"/></graphic>
+                    </ToggleButton>
+                </VBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <!-- Promo card -->
+                <VBox styleClass="promo-card">
+                    <Region styleClass="icon, icon-rocket, promo-icon"/>
+                    <Label styleClass="promo-title" text="Impulsa tu restaurante" wrapText="true"/>
+                    <Label styleClass="promo-text" text="Gestiona, crece y destaca." wrapText="true"/>
+                    <Button styleClass="promo-button" text="Descubrir" contentDisplay="RIGHT"
+                            onAction="#handleDiscover">
+                        <graphic><Region styleClass="icon, icon-arrow, icon-xs"/></graphic>
+                    </Button>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </left>
+
+    <!-- MAIN -->
+    <center>
+        <ScrollPane styleClass="main-scroll" fitToWidth="true" hbarPolicy="NEVER">
+            <VBox styleClass="main-content">
+
+                <!-- Top bar -->
+                <HBox styleClass="top-bar">
+                    <HBox styleClass="search-box" HBox.hgrow="NEVER" prefWidth="510">
+                        <Region styleClass="icon, icon-search, search-icon"/>
+                        <TextField fx:id="searchField" styleClass="search-field"
+                                   promptText="Buscar restaurantes, pedidos..." HBox.hgrow="ALWAYS"/>
+                    </HBox>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <StackPane styleClass="bell-box">
+                        <Button styleClass="icon-button" onAction="#handleNotifications">
+                            <graphic><Region styleClass="icon, icon-bell, bell-icon"/></graphic>
+                        </Button>
+                        <Circle styleClass="bell-dot" radius="4" mouseTransparent="true"
+                                StackPane.alignment="TOP_RIGHT" translateX="-8" translateY="8"/>
+                    </StackPane>
+
+                    <Separator orientation="VERTICAL" styleClass="top-separator"/>
+
+                    <MenuButton fx:id="userMenu" styleClass="user-menu" text="Victor Muñoz">
+                        <graphic>
+                            <StackPane styleClass="avatar">
+                                <Circle styleClass="avatar-circle" radius="18"/>
+                                <Label fx:id="avatarInitials" styleClass="avatar-text" text="VM"/>
+                            </StackPane>
+                        </graphic>
+                        <items>
+                            <MenuItem text="Mi perfil" onAction="#handleProfile"/>
+                            <MenuItem text="Cambiar contraseña" onAction="#handleChangePassword"/>
+                            <MenuItem text="Cerrar sesión" onAction="#handleLogout"/>
+                        </items>
+                    </MenuButton>
+                </HBox>
+
+                <!-- Hero banner -->
+                <StackPane styleClass="hero" minHeight="384" prefHeight="384">
+
+                    <!-- Illustration (right) -->
+                    <Pane styleClass="hero-art" mouseTransparent="true"
+                          StackPane.alignment="CENTER_RIGHT"
+                          prefWidth="560" maxWidth="560" prefHeight="384" maxHeight="384">
+                        <Circle styleClass="hero-bubble" centerX="340" centerY="170" radius="150"/>
+                        <Circle styleClass="hero-bubble, hero-bubble-soft" centerX="170" centerY="280" radius="100"/>
+
+                        <!-- Plate -->
+                        <Ellipse styleClass="cloche-plate-shadow" centerX="330" centerY="286" radiusX="170" radiusY="22"/>
+                        <Ellipse styleClass="cloche-plate" centerX="330" centerY="268" radiusX="168" radiusY="26"/>
+                        <Ellipse styleClass="cloche-plate-top" centerX="330" centerY="260" radiusX="150" radiusY="16"/>
+
+                        <!-- Dome -->
+                        <SVGPath styleClass="cloche-dome"
+                                 content="M200 258 C200 160 255 112 330 112 C405 112 460 160 460 258 Z"/>
+                        <SVGPath styleClass="cloche-highlight"
+                                 content="M232 236 C230 180 262 140 310 128 C276 150 254 190 256 236 Z"/>
+                        <Rectangle styleClass="cloche-neck" x="322" y="100" width="16" height="16"
+                                   arcWidth="6" arcHeight="6"/>
+                        <Ellipse styleClass="cloche-knob" centerX="330" centerY="96" radiusX="20" radiusY="12"/>
+
+                        <!-- Orbit ring -->
+                        <Ellipse styleClass="orbit" centerX="330" centerY="200" radiusX="270" radiusY="70"
+                                 rotate="-18"/>
+                    </Pane>
+
+                    <!-- Text (left) -->
+                    <VBox styleClass="hero-text" StackPane.alignment="CENTER_LEFT"
+                          maxWidth="560" maxHeight="-Infinity">
+                        <Label styleClass="hero-title"
+                               text="Gestiona tu restaurante de forma más inteligente" wrapText="true"/>
+                        <Label styleClass="hero-subtitle"
+                               text="Controla tus reservas, pedidos y ventas en un solo lugar, con la máxima facilidad."
+                               wrapText="true"/>
+                        <HBox styleClass="hero-actions">
+                            <Button styleClass="btn-primary" text="Ver demo" onAction="#handleDemo">
+                                <graphic><Region styleClass="icon, icon-play, icon-sm"/></graphic>
+                            </Button>
+                            <Button styleClass="btn-outline" text="Saber más" onAction="#handleLearnMore"/>
+                        </HBox>
+                    </VBox>
+                </StackPane>
+
+                <!-- Feature cards -->
+                <HBox styleClass="feature-row">
+                    <HBox styleClass="feature-card" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                          onMouseClicked="#handleFeatureReservations">
+                        <StackPane styleClass="feature-icon-box">
+                            <Region styleClass="icon, icon-calendar, feature-icon"/>
+                        </StackPane>
+                        <VBox styleClass="feature-texts" HBox.hgrow="ALWAYS">
+                            <Label styleClass="feature-title" text="Reservas"/>
+                            <Label styleClass="feature-desc" text="Gestiona tus reservas de manera sencilla." wrapText="true"/>
+                        </VBox>
+                        <StackPane styleClass="arrow-circle">
+                            <Region styleClass="icon, icon-arrow, arrow-icon"/>
+                        </StackPane>
+                    </HBox>
+
+                    <HBox styleClass="feature-card" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                          onMouseClicked="#handleFeatureOrders">
+                        <StackPane styleClass="feature-icon-box">
+                            <Region styleClass="icon, icon-cloche, feature-icon"/>
+                        </StackPane>
+                        <VBox styleClass="feature-texts" HBox.hgrow="ALWAYS">
+                            <Label styleClass="feature-title" text="Pedidos"/>
+                            <Label styleClass="feature-desc" text="Recibe y organiza pedidos al instante." wrapText="true"/>
+                        </VBox>
+                        <StackPane styleClass="arrow-circle">
+                            <Region styleClass="icon, icon-arrow, arrow-icon"/>
+                        </StackPane>
+                    </HBox>
+
+                    <HBox styleClass="feature-card" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                          onMouseClicked="#handleFeatureReports">
+                        <StackPane styleClass="feature-icon-box">
+                            <Region styleClass="icon, icon-chart, feature-icon"/>
+                        </StackPane>
+                        <VBox styleClass="feature-texts" HBox.hgrow="ALWAYS">
+                            <Label styleClass="feature-title" text="Reportes"/>
+                            <Label styleClass="feature-desc" text="Analiza el rendimiento de tu negocio." wrapText="true"/>
+                        </VBox>
+                        <StackPane styleClass="arrow-circle">
+                            <Region styleClass="icon, icon-arrow, arrow-icon"/>
+                        </StackPane>
+                    </HBox>
+
+                    <HBox styleClass="feature-card" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                          onMouseClicked="#handleFeatureAll">
+                        <StackPane styleClass="feature-icon-box">
+                            <Region styleClass="icon, icon-settings, feature-icon"/>
+                        </StackPane>
+                        <VBox styleClass="feature-texts" HBox.hgrow="ALWAYS">
+                            <Label styleClass="feature-title" text="Todo en uno"/>
+                            <Label styleClass="feature-desc" text="Una solución completa para tu restaurante." wrapText="true"/>
+                        </VBox>
+                        <StackPane styleClass="arrow-circle">
+                            <Region styleClass="icon, icon-arrow, arrow-icon"/>
+                        </StackPane>
+                    </HBox>
+                </HBox>
+
+                <!-- Bottom row -->
+                <HBox styleClass="bottom-row">
+
+                    <!-- Overview card -->
+                    <VBox styleClass="card, overview-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                        <HBox styleClass="overview-header">
+                            <VBox HBox.hgrow="ALWAYS">
+                                <Label styleClass="card-title" text="Tu restaurante, en un vistazo"/>
+                                <Label styleClass="card-subtitle" text="Resumen de actividad de hoy"/>
+                            </VBox>
+                            <ComboBox fx:id="periodCombo" styleClass="period-combo" value="Hoy">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Hoy"/>
+                                        <String fx:value="Esta semana"/>
+                                        <String fx:value="Este mes"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
+                        </HBox>
+
+                        <!-- KPIs -->
+                        <HBox styleClass="kpi-row">
+                            <HBox styleClass="kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                <Region styleClass="icon, icon-cloche, kpi-icon"/>
+                                <VBox styleClass="kpi-texts">
+                                    <Label fx:id="ordersValue" styleClass="kpi-value" text="124"/>
+                                    <Label styleClass="kpi-label" text="Pedidos"/>
+                                    <Label fx:id="ordersTrend" styleClass="kpi-trend" text="+12%">
+                                        <graphic><Region styleClass="icon, icon-up, trend-icon"/></graphic>
+                                    </Label>
+                                </VBox>
+                            </HBox>
+                            <HBox styleClass="kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                <Region styleClass="icon, icon-calendar, kpi-icon"/>
+                                <VBox styleClass="kpi-texts">
+                                    <Label fx:id="reservationsValue" styleClass="kpi-value" text="52"/>
+                                    <Label styleClass="kpi-label" text="Reservas"/>
+                                    <Label fx:id="reservationsTrend" styleClass="kpi-trend" text="+8%">
+                                        <graphic><Region styleClass="icon, icon-up, trend-icon"/></graphic>
+                                    </Label>
+                                </VBox>
+                            </HBox>
+                            <HBox styleClass="kpi-card" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                <Region styleClass="icon, icon-euro, kpi-icon"/>
+                                <VBox styleClass="kpi-texts">
+                                    <Label fx:id="salesValue" styleClass="kpi-value" text="€2.840"/>
+                                    <Label styleClass="kpi-label" text="Ventas"/>
+                                    <Label fx:id="salesTrend" styleClass="kpi-trend" text="+15%">
+                                        <graphic><Region styleClass="icon, icon-up, trend-icon"/></graphic>
+                                    </Label>
+                                </VBox>
+                            </HBox>
+                        </HBox>
+
+                        <!-- Chart (data is loaded in controllers.Home#initialize) -->
+                        <AreaChart fx:id="activityChart" styleClass="activity-chart"
+                                   legendVisible="false" animated="false"
+                                   createSymbols="true" prefHeight="190" minHeight="190">
+                            <xAxis>
+                                <CategoryAxis fx:id="xAxis" side="BOTTOM" tickMarkVisible="false"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis fx:id="yAxis" side="LEFT" autoRanging="false"
+                                            lowerBound="0" upperBound="3000" tickUnit="1000"
+                                            minorTickVisible="false" tickMarkVisible="false"/>
+                            </yAxis>
+                        </AreaChart>
+                    </VBox>
+
+                    <!-- Promo image card -->
+                    <StackPane styleClass="experience-card" prefWidth="420" minWidth="360">
+                        <VBox styleClass="experience-overlay" StackPane.alignment="BOTTOM_LEFT"
+                              maxHeight="-Infinity">
+                            <Label styleClass="experience-title"
+                                   text="Mejora la experiencia de tus clientes" wrapText="true"/>
+                            <Label styleClass="experience-text"
+                                   text="Con herramientas diseñadas para tu éxito." wrapText="true"/>
+                            <Button styleClass="btn-light" text="Conocer más" contentDisplay="RIGHT"
+                                    onAction="#handleKnowMore">
+                                <graphic><Region styleClass="icon, icon-arrow, icon-xs"/></graphic>
+                            </Button>
+                        </VBox>
+                    </StackPane>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>
+>>>>>>> origin/main:src/views/res/models/home.fxml
