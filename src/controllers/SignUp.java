@@ -1,17 +1,7 @@
 package controllers;
 
-import SignUI_Front.client.UserRESTClient;
-import jakarta.ws.rs.ProcessingException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.GenericType;
-import java.io.IOException;
-import java.util.List;
-
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
@@ -19,8 +9,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-import javafx.stage.Stage;
 
+import java.util.List;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.GenericType;
+import SignUI_Front.client.UserRESTClient;
 import singui_front.model.User;
 
 public class SignUp {
@@ -29,19 +23,22 @@ public class SignUp {
     private static final String ALLOWED_CHARS = "[a-zA-Z0-9._@$*-]+";
     private static final String SPECIAL_CHAR = ".*[._@$*-].*";
 
-    // Campos de la interfaz de usuario
+    // Datos personales
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
 
+    // Contraseña
     @FXML private PasswordField passwordField;
     @FXML private TextField passwordVisibleField;
     @FXML private ToggleButton passwordToggle;
 
+    // Confirmación de contraseña
     @FXML private PasswordField confirmPasswordField;
     @FXML private TextField confirmPasswordVisibleField;
     @FXML private ToggleButton confirmPasswordToggle;
 
+    // Dirección
     @FXML private TextField stateField;
     @FXML private TextField cityField;
     @FXML private TextField streetField;
@@ -61,25 +58,28 @@ public class SignUp {
             strengthLabel.setText("");
         }
 
-        if (passwordVisibleField != null && passwordToggle != null) {
-            linkPasswordToggle(passwordField, passwordVisibleField, passwordToggle);
-        }
-        if (confirmPasswordVisibleField != null && confirmPasswordToggle != null) {
-            linkPasswordToggle(confirmPasswordField, confirmPasswordVisibleField, confirmPasswordToggle);
-        }
+        linkPasswordToggle(passwordField, passwordVisibleField, passwordToggle);
+        linkPasswordToggle(confirmPasswordField, confirmPasswordVisibleField, confirmPasswordToggle);
 
         passwordField.textProperty().addListener(
             (obs, oldValue, newValue) -> updatePasswordStrength(newValue)
         );
 
         signUpButton.setOnAction(event -> handleSignUp());
-        signInLink.setOnAction(event -> handleSignInRedirection());
+
+        if (strengthLabel != null) {
+            strengthLabel.managedProperty().bind(strengthLabel.textProperty().isNotEmpty());
+            strengthLabel.visibleProperty().bind(strengthLabel.textProperty().isNotEmpty());
+        }
     }
 
+    /** Sincroniza PasswordField y TextField y alterna cuál se ve según el ToggleButton. */
     private void linkPasswordToggle(PasswordField hidden, TextField visible, ToggleButton toggle) {
         visible.textProperty().bindBidirectional(hidden.textProperty());
+
         visible.visibleProperty().bind(toggle.selectedProperty());
         visible.managedProperty().bind(visible.visibleProperty());
+
         hidden.visibleProperty().bind(toggle.selectedProperty().not());
         hidden.managedProperty().bind(hidden.visibleProperty());
 
@@ -90,19 +90,18 @@ public class SignUp {
         });
     }
 
-    @FXML
     private void handleSignUp() {
         clearError();
 
         String firstName = firstNameField.getText().trim();
-        String lastName  = lastNameField.getText().trim();
-        String email     = emailField.getText().trim();
-        String password  = passwordField.getText();
+        String lastName = lastNameField.getText().trim();
+        String email = emailField.getText().trim();
+        String password = passwordField.getText();
         String confirmation = confirmPasswordField.getText();
-        String state    = stateField.getText().trim();
-        String city     = cityField.getText().trim();
-        String street   = streetField.getText().trim();
-        String zip      = zipField.getText().trim();
+        String state = stateField.getText().trim();
+        String city = cityField.getText().trim();
+        String street = streetField.getText().trim();
+        String zip = zipField.getText().trim();
 
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() ||
             password.isEmpty() || confirmation.isEmpty() || state.isEmpty() ||
@@ -131,11 +130,8 @@ public class SignUp {
             return;
         }
 
-        Integer zipCode;
-        try {
-            zipCode = Integer.valueOf(zip);
-        } catch (NumberFormatException e) {
-            showError("El código postal debe ser un número entero.");
+        if (!zip.matches("\\d{5}")) {
+            showError("El código postal debe tener 5 dígitos.");
             return;
         }
 
@@ -147,31 +143,32 @@ public class SignUp {
         user.setState(state);
         user.setCity(city);
         user.setStreet(street);
-        user.setZip(zipCode);
+        user.setZip(Integer.valueOf(zip));
 
-        registrarUsuarioEnBackend(user);
+        registerUser(user);
     }
 
-    private void registrarUsuarioEnBackend(User user) {
+    /**
+     * Comprueba por GET que el email no existe y, si no existe, lo guarda por POST.
+     * Se ejecuta fuera del hilo de JavaFX para no congelar la ventana.
+     */
+    private void registerUser(User user) {
+        final String email = user.getEmail();
         signUpButton.setDisable(true);
 
-        Task<Boolean> task = new Task<>() {
+        Task<Boolean> task = new Task<Boolean>() {
             @Override
-            protected Boolean call() throws Exception {
+            protected Boolean call() {
                 UserRESTClient client = new UserRESTClient();
                 try {
-                    GenericType<List<User>> responseType = new GenericType<List<User>>() {};
-                    List<User> usuariosExistentes = client.findAll_XML(responseType);
-
-                    if (usuariosExistentes != null) {
-                        boolean existeEmail = usuariosExistentes.stream()
-                                .anyMatch(u -> u.getEmail() != null && u.getEmail().equalsIgnoreCase(user.getEmail()));
-
-                        if (existeEmail) {
+                    try {
+                        List<User> existing = client.findByEmail_XML(new GenericType<List<User>>() {}, email);
+                        if (existing != null && !existing.isEmpty()) {
                             return false;
                         }
+                    } catch (jakarta.ws.rs.NotFoundException notFound) {
+                        // el email no existe: se puede registrar
                     }
-
                     client.create_XML(user);
                     return true;
                 } finally {
@@ -182,11 +179,10 @@ public class SignUp {
 
         task.setOnSucceeded(e -> {
             signUpButton.setDisable(false);
-            if (Boolean.TRUE.equals(task.getValue())) {
-                showMessage("Cuenta registrada correctamente en la base de datos.", false);
-                handleSignInRedirection();
+            if (task.getValue()) {
+                showMessage("Cuenta creada correctamente.", false);
             } else {
-                showError("El correo electrónico ya está registrado en la base de datos.");
+                showError("Ya existe una cuenta con ese correo electrónico.");
             }
         });
 
@@ -195,35 +191,40 @@ public class SignUp {
             Throwable ex = task.getException();
             ex.printStackTrace();
             if (ex instanceof ProcessingException) {
-                showError("No se pudo conectar con el servidor backend.");
+                showError("No se pudo conectar con el servidor.");
             } else if (ex instanceof WebApplicationException) {
                 int status = ((WebApplicationException) ex).getResponse().getStatus();
-                showError("El backend rechazó el registro (HTTP " + status + ").");
+                showError("El servidor rechazó el registro (HTTP " + status + ").");
             } else {
-                showError("Error al procesar la solicitud: " + ex.getMessage());
+                showError("Error inesperado: " + ex.getMessage());
             }
         });
 
-        Thread thread = new Thread(task, "signup-rest-thread");
+        Thread thread = new Thread(task, "signup-request");
         thread.setDaemon(true);
         thread.start();
     }
 
-    /**
-     * Redirige a la vista SignIn cargando directamente el FXML sin usar clases auxiliares.
-     */
-    private void handleSignInRedirection() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/res/models/sign_in.fxml"));
-            Parent root = loader.load();
+    /** GET http://localhost:8080/SignUI_Back/webresources/entities.user */
+    private List<User> fetchUsers(UserRESTClient client) {
+        return client.findAll_XML(new GenericType<List<User>>() {});
+    }
 
-            Stage stage = (Stage) signInLink.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Sign In");
-            stage.show();
-        } catch (IOException e) {
+    /** Petición GET suelta (útil para probar la conexión). */
+    public void cargarUsuarios() {
+        UserRESTClient client = new UserRESTClient();
+        try {
+            List<User> usuarios = fetchUsers(client);
+            if (usuarios != null) {
+                for (User usuario : usuarios) {
+                    System.out.println("Email obtenido: " + usuario.getEmail());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error al obtener los usuarios: " + e.getMessage());
             e.printStackTrace();
-            showError("No se pudo abrir la pantalla de inicio de sesión.");
+        } finally {
+            client.close();
         }
     }
 
@@ -254,7 +255,7 @@ public class SignUp {
         if (strengthLabel == null) return;
 
         String strength = getPasswordStrength(password);
-        if ("Invalid".equals(strength)) {
+        if (strength.equals("Invalid")) {
             strengthLabel.setText(
                 password == null || password.isEmpty() ? "" : "La contraseña no cumple los requisitos."
             );
@@ -272,8 +273,8 @@ public class SignUp {
             System.out.println(message);
             return;
         }
-        messageLabel.getStyleClass().removeAll("error", "success");
-        messageLabel.getStyleClass().add(isError ? "error" : "success");
+        messageLabel.getStyleClass().removeAll("auth-error", "auth-success");
+        messageLabel.getStyleClass().add(isError ? "auth-error" : "auth-success");
         messageLabel.setText(message);
         messageLabel.setManaged(true);
         messageLabel.setVisible(true);
