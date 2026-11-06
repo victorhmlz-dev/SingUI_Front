@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-           fx:controller="controllers.SignIn"
+           fx:controller="controllers.SignInController"
            styleClass="auth-root" stylesheets="@auth.css"
            prefWidth="900" prefHeight="680">
 
@@ -27,9 +27,14 @@
                 <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
             </HBox>
 
-            <HBox fx:id="passwordContainer" styleClass="auth-input">
+            <HBox fx:id="passwordContainer" styleClass="auth-input" alignment="CENTER_LEFT">
                 <Region styleClass="icon, icon-lock"/>
-                <PasswordField fx:id="passwordField" promptText="Password" HBox.hgrow="ALWAYS"/>
+                <StackPane HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
+                    <PasswordField fx:id="passwordField" promptText="Password"/>
+                    <TextField fx:id="passwordTextField" promptText="Password" visible="false" managed="false"/>
+                </StackPane>
+                <Button fx:id="togglePasswordButton" styleClass="icon-button, icon-eye"
+                        onAction="#handleTogglePassword" focusTraversable="false"/>
             </HBox>
 
             <HBox alignment="CENTER_RIGHT">

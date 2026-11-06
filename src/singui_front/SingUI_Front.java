@@ -14,7 +14,7 @@ public class SingUI_Front extends Application {
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
 
-        changeView("sign_up");
+        changeView("sign_in");
 
         primaryStage.setTitle("SingUI");
         primaryStage.show();
