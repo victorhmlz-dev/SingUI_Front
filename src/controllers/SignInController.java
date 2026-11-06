@@ -205,14 +205,13 @@ public class SignInController {
             public void handle(WorkerStateEvent event) {
                 Boolean success = task.getValue();
                 if (Boolean.TRUE.equals(success)) {
-                    // Credenciales correctas -> Navegar a la pantalla principal (SI-09)
-                    navigateTo("/views/res/models/home.fxml");
-                } else {
-                    // Credenciales incorrectas (SI-08): No resalta bordes en rojo
-                    passwordField.clear();
-                    showError("Incorrect email or password.");
-                    requestFocusOnVisiblePassword();
-                }
+                // Transfiere los datos del usuario hacia el controlador Home
+                navigateToHome(rawEmail.trim());
+            }else {
+                passwordField.clear();
+                showError("Incorrect email or password.");
+                requestFocusOnVisiblePassword();
+            }
             }
         });
 
@@ -260,6 +259,31 @@ public class SignInController {
         } else {
             passwordTextField.requestFocus();
         }
+    }
+    
+    private void navigateToHome(String userIdentifier) {
+    try {
+        URL resource = getClass().getResource("/views/res/models/home.fxml");
+        if (resource == null) {
+            showError("No se encontró el archivo FXML en: /models/home.fxml");
+            return;
+        }
+
+        FXMLLoader loader = new FXMLLoader(resource);
+        Parent root = loader.load();
+
+        // Obtener el controlador de Home y pasarle la información del usuario
+        Home homeController = loader.getController();
+        if (homeController != null) {
+            homeController.setUserData(userIdentifier);
+        }
+
+        Stage stage = (Stage) signInButton.getScene().getWindow();
+        stage.setScene(new Scene(root));
+    } catch (IOException e) {
+        e.printStackTrace();
+        showError("Error al cargar la pantalla principal.");
+    }
     }
 
     private void showError(String message) {
