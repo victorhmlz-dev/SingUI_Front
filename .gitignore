@@ -1,29 +1,56 @@
-# Compilación (NetBeans / Ant)
+
+# ==========================================
+# COMPILACIÓN (NETBEANS / ANT)
+# ==========================================
+
 /build/
 /dist/
+*.class
 
-# Configuración local de NetBeans (propia de cada equipo)
+# ==========================================
+# CONFIGURACIÓN PRIVADA DE NETBEANS
+# ==========================================
+
 /nbproject/private/
 
-# Documentos de Word
-*.doc
-*.docx
-*.docm
-*.dot
-*.dotx
-~$*
+# ==========================================
+# ARCHIVOS TEMPORALES Y LOGS
+# ==========================================
 
-# Archivos compilados y logs
-*.class
 *.log
+*.tmp
+*.bak
+*.swp
+*~
 hs_err_pid*
 
-# Sistema operativo
+# ==========================================
+# DOCUMENTOS TEMPORALES DE OFFICE
+# ==========================================
+
+~$*
+*.tmp
+
+# ==========================================
+# SISTEMA OPERATIVO
+# ==========================================
+
 Thumbs.db
 Desktop.ini
 .DS_Store
 
-# Otros IDEs
+# ==========================================
+# OTROS IDEs
+# ==========================================
+
 .idea/
 *.iml
 .vscode/
+
+# ==========================================
+# CONFIGURACIONES LOCALES
+# ==========================================
+
+local.properties
+.env
+.env.*
