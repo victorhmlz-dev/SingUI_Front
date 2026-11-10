@@ -1,7 +1,23 @@
 package controllers;
 
+import SignUI_Front.client.UserRESTClient;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.GenericType;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
@@ -9,36 +25,43 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-
-import java.util.List;
-import jakarta.ws.rs.ProcessingException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.GenericType;
-import SignUI_Front.client.UserRESTClient;
+import javafx.stage.Stage;
 import singui_front.model.User;
+import singui_front.util.PasswordPolicy;
 
+/**
+ * Controlador de la ventana de registro (sign_up.fxml).
+ *
+ * Flujo:
+ *   1. Valida todos los campos en el cliente (reglas de contraseña en PasswordPolicy).
+ *   2. En segundo plano: comprueba que el email no exista y crea el usuario (POST).
+ *      El id lo asigna el backend.
+ *   3. Si todo va bien, vuelve a Sign In con el email ya escrito.
+ *
+ * @author teo
+ */
 public class SignUp {
 
-    private static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-    private static final String ALLOWED_CHARS = "[a-zA-Z0-9._@$*-]+";
-    private static final String SPECIAL_CHAR = ".*[._@$*-].*";
+    /** Mismo formato de email que SignIn. */
+    private static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[A-Za-z]{2,}$");
 
-    // Datos personales
+    private static final String SIGN_IN_FXML = "/views/res/models/sign_in.fxml";
+
+    // ---------- Nodos del FXML ----------
+
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
 
-    // Contraseña
     @FXML private PasswordField passwordField;
     @FXML private TextField passwordVisibleField;
     @FXML private ToggleButton passwordToggle;
 
-    // Confirmación de contraseña
     @FXML private PasswordField confirmPasswordField;
     @FXML private TextField confirmPasswordVisibleField;
     @FXML private ToggleButton confirmPasswordToggle;
 
-    // Dirección
     @FXML private TextField stateField;
     @FXML private TextField cityField;
     @FXML private TextField streetField;
@@ -50,27 +73,39 @@ public class SignUp {
     @FXML private Label messageLabel;
     @FXML private Label strengthLabel;
 
+    /** Recuadros (.auth-input) de todos los campos, para quitarles el borde rojo. */
+    private final List<Node> inputContainers = new ArrayList<>();
+
+    // ---------- Inicialización ----------
+
     @FXML
     public void initialize() {
-        clearError();
-
-        if (strengthLabel != null) {
-            strengthLabel.setText("");
-        }
-
+        // Mostrar/ocultar contraseña: mismo modelo que SignIn y ChangePassword.
         linkPasswordToggle(passwordField, passwordVisibleField, passwordToggle);
         linkPasswordToggle(confirmPasswordField, confirmPasswordVisibleField, confirmPasswordToggle);
 
-        passwordField.textProperty().addListener(
-            (obs, oldValue, newValue) -> updatePasswordStrength(newValue)
-        );
-
-        signUpButton.setOnAction(event -> handleSignUp());
-
-        if (strengthLabel != null) {
-            strengthLabel.managedProperty().bind(strengthLabel.textProperty().isNotEmpty());
-            strengthLabel.visibleProperty().bind(strengthLabel.textProperty().isNotEmpty());
+        // Todos los campos editables: al escribir en cualquiera se limpia el error.
+        TextField[] fields = {
+            firstNameField, lastNameField, emailField, passwordField, confirmPasswordField,
+            stateField, cityField, streetField, zipField
+        };
+        for (TextField field : fields) {
+            inputContainers.add(containerOf(field));
+            field.textProperty().addListener((obs, oldValue, newValue) -> clearError());
         }
+        termsCheckBox.selectedProperty().addListener((obs, oldValue, newValue) -> clearError());
+
+        // Indicador de fortaleza en vivo. También depende del email (regla del nombre).
+        passwordField.textProperty().addListener((obs, oldValue, newValue) -> updatePasswordStrength());
+        emailField.textProperty().addListener((obs, oldValue, newValue) -> updatePasswordStrength());
+
+        // La etiqueta de fortaleza solo ocupa espacio cuando tiene texto.
+        strengthLabel.managedProperty().bind(strengthLabel.textProperty().isNotEmpty());
+        strengthLabel.visibleProperty().bind(strengthLabel.textProperty().isNotEmpty());
+
+        clearError();
+        strengthLabel.setText("");
+        Platform.runLater(() -> firstNameField.requestFocus());
     }
 
     /** Sincroniza PasswordField y TextField y alterna cuál se ve según el ToggleButton. */
@@ -90,51 +125,67 @@ public class SignUp {
         });
     }
 
-    private void handleSignUp() {
+    // ---------- Acciones ----------
+
+    @FXML
+    public void handleSignUp(ActionEvent event) {
         clearError();
 
+        // 1. Campos obligatorios: se marca el primero que esté vacío.
+        TextField[] required = {
+            firstNameField, lastNameField, emailField, passwordField, confirmPasswordField,
+            stateField, cityField, streetField, zipField
+        };
+        for (TextField field : required) {
+            if (field.getText() == null || field.getText().trim().isEmpty()) {
+                failOn(field, "All fields are required.");
+                return;
+            }
+        }
+
         String firstName = firstNameField.getText().trim();
-        String lastName = lastNameField.getText().trim();
-        String email = emailField.getText().trim();
-        String password = passwordField.getText();
-        String confirmation = confirmPasswordField.getText();
-        String state = stateField.getText().trim();
-        String city = cityField.getText().trim();
-        String street = streetField.getText().trim();
-        String zip = zipField.getText().trim();
+        String lastName  = lastNameField.getText().trim();
+        String email     = emailField.getText().trim().toLowerCase();   // siempre en minúsculas
+        String password  = passwordField.getText();
+        String confirm   = confirmPasswordField.getText();
+        String state     = stateField.getText().trim();
+        String city      = cityField.getText().trim();
+        String street    = streetField.getText().trim();
+        String zip       = zipField.getText().trim();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() ||
-            password.isEmpty() || confirmation.isEmpty() || state.isEmpty() ||
-            city.isEmpty() || street.isEmpty() || zip.isEmpty()) {
-            showError("Todos los campos son obligatorios.");
+        // 2. Email
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            failOn(emailField, "The email format is not valid.");
             return;
         }
 
-        if (!email.matches(EMAIL_REGEX)) {
-            showError("El formato del correo electrónico no es válido.");
+        // 3. Contraseña: se indica exactamente qué requisitos faltan.
+        List<String> passwordErrors = PasswordPolicy.validate(password, email);
+        if (!passwordErrors.isEmpty()) {
+            failOn(passwordField, String.join(" ", passwordErrors));
             return;
         }
 
-        if (!isValidPassword(password)) {
-            showError("La contraseña no cumple los requisitos mínimos.");
+        // 4. Confirmación
+        if (!password.equals(confirm)) {
+            failOn(confirmPasswordField, "Passwords do not match.");
             return;
         }
 
-        if (!password.equals(confirmation)) {
-            showError("Las contraseñas no coinciden.");
-            return;
-        }
-
-        if (!termsCheckBox.isSelected()) {
-            showError("Debes aceptar los Términos y la Política de Privacidad.");
-            return;
-        }
-
+        // 5. Código postal (en la base de datos es un int)
         if (!zip.matches("\\d{5}")) {
-            showError("El código postal debe tener 5 dígitos.");
+            failOn(zipField, "The zip code must have 5 digits.");
             return;
         }
 
+        // 6. Términos, al final porque no es un campo de texto.
+        if (!termsCheckBox.isSelected()) {
+            showMessage("You must accept the Terms and Privacy Policy.", true);
+            termsCheckBox.requestFocus();
+            return;
+        }
+
+        // Sin id: lo asigna el backend al crear el usuario.
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
@@ -148,26 +199,35 @@ public class SignUp {
         registerUser(user);
     }
 
+    /** Vuelve a la pantalla de inicio de sesión. */
+    @FXML
+    public void handleSignIn(ActionEvent event) {
+        navigateToSignIn(null);
+    }
+
+    // ---------- Registro en el backend ----------
+
     /**
-     * Comprueba por GET que el email no existe y, si no existe, lo guarda por POST.
-     * Se ejecuta fuera del hilo de JavaFX para no congelar la ventana.
+     * Comprueba que el email no exista (GET) y crea el usuario (POST),
+     * fuera del hilo de JavaFX para no congelar la ventana.
+     * Devuelve true si se creó y false si el email ya existía.
      */
     private void registerUser(User user) {
         final String email = user.getEmail();
-        signUpButton.setDisable(true);
 
-        Task<Boolean> task = new Task<Boolean>() {
+        Task<Boolean> task = new Task<>() {
             @Override
             protected Boolean call() {
                 UserRESTClient client = new UserRESTClient();
                 try {
                     try {
-                        List<User> existing = client.findByEmail_XML(new GenericType<List<User>>() {}, email);
+                        List<User> existing = client.findByEmail_XML(
+                                new GenericType<List<User>>() { }, email);
                         if (existing != null && !existing.isEmpty()) {
-                            return false;
+                            return false;                  // email ya registrado
                         }
-                    } catch (jakarta.ws.rs.NotFoundException notFound) {
-                        // el email no existe: se puede registrar
+                    } catch (NotFoundException notFound) {
+                        // 404: el email no existe, se puede registrar
                     }
                     client.create_XML(user);
                     return true;
@@ -177,26 +237,27 @@ public class SignUp {
             }
         };
 
+        // Botón desactivado mientras dura la petición.
+        signUpButton.disableProperty().bind(task.runningProperty());
+
         task.setOnSucceeded(e -> {
-            signUpButton.setDisable(false);
             if (task.getValue()) {
-                showMessage("Cuenta creada correctamente.", false);
+                navigateToSignIn(email);                   // registro correcto
             } else {
-                showError("Ya existe una cuenta con ese correo electrónico.");
+                failOn(emailField, "An account with this email already exists.");
             }
         });
 
         task.setOnFailed(e -> {
-            signUpButton.setDisable(false);
             Throwable ex = task.getException();
             ex.printStackTrace();
             if (ex instanceof ProcessingException) {
-                showError("No se pudo conectar con el servidor.");
+                showMessage("Could not connect to the server.", true);
             } else if (ex instanceof WebApplicationException) {
                 int status = ((WebApplicationException) ex).getResponse().getStatus();
-                showError("El servidor rechazó el registro (HTTP " + status + ").");
+                showMessage("The server rejected the registration (HTTP " + status + ").", true);
             } else {
-                showError("Error inesperado: " + ex.getMessage());
+                showMessage("An unexpected error occurred. Please try again later.", true);
             }
         });
 
@@ -205,74 +266,83 @@ public class SignUp {
         thread.start();
     }
 
-    /** GET http://localhost:8080/SignUI_Back/webresources/entities.user */
-    private List<User> fetchUsers(UserRESTClient client) {
-        return client.findAll_XML(new GenericType<List<User>>() {});
-    }
+    // ---------- Navegación ----------
 
-    /** Petición GET suelta (útil para probar la conexión). */
-    public void cargarUsuarios() {
-        UserRESTClient client = new UserRESTClient();
+    /**
+     * Abre Sign In. Si se pasa un email (registro correcto), lo deja escrito
+     * y pone el foco en la contraseña.
+     */
+    private void navigateToSignIn(String email) {
         try {
-            List<User> usuarios = fetchUsers(client);
-            if (usuarios != null) {
-                for (User usuario : usuarios) {
-                    System.out.println("Email obtenido: " + usuario.getEmail());
-                }
+            URL resource = getClass().getResource(SIGN_IN_FXML);
+            if (resource == null) {
+                showMessage("FXML not found: " + SIGN_IN_FXML, true);
+                return;
             }
-        } catch (Exception e) {
-            System.err.println("Error al obtener los usuarios: " + e.getMessage());
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent root = loader.load();
+
+            if (email != null) {
+                SignIn signIn = loader.getController();
+                signIn.prefillEmail(email);
+            }
+
+            Stage stage = (Stage) signUpButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            client.close();
+            showMessage("Error loading the sign in screen.", true);
         }
     }
 
-    private boolean isValidPassword(String password) {
-        if (password == null || password.length() < 8) return false;
-        return password.matches(".*[A-Z].*")
-            && password.matches(".*[a-z].*")
-            && password.matches(".*[0-9].*")
-            && password.matches(ALLOWED_CHARS);
-    }
+    // ---------- Indicador de fortaleza ----------
 
-    private String getPasswordStrength(String password) {
-        if (!isValidPassword(password)) return "Invalid";
-
-        long upper = password.chars().filter(Character::isUpperCase).count();
-        long lower = password.chars().filter(Character::isLowerCase).count();
-        long digits = password.chars().filter(Character::isDigit).count();
-
-        boolean varied = upper > 1 && lower > 1 && digits > 1;
-        boolean hasSpecial = password.matches(SPECIAL_CHAR);
-
-        if (varied && hasSpecial) return "Strong";
-        if (varied || hasSpecial) return "Medium";
-        return "Weak";
-    }
-
-    private void updatePasswordStrength(String password) {
-        if (strengthLabel == null) return;
-
-        String strength = getPasswordStrength(password);
-        if (strength.equals("Invalid")) {
-            strengthLabel.setText(
-                password == null || password.isEmpty() ? "" : "La contraseña no cumple los requisitos."
-            );
-        } else {
-            strengthLabel.setText("Strength: " + strength);
+    /** Muestra qué falta o, si la contraseña es válida, su fortaleza. */
+    private void updatePasswordStrength() {
+        String password = passwordField.getText();
+        if (password == null || password.isEmpty()) {
+            strengthLabel.setText("");
+            return;
         }
+        List<String> errors = PasswordPolicy.validate(password, emailField.getText());
+        strengthLabel.setText(errors.isEmpty()
+                ? "Strength: " + PasswordPolicy.strength(password).label()
+                : String.join(" ", errors));
     }
 
-    private void showError(String message) {
+    // ---------- Utilidades de interfaz ----------
+
+    /** Muestra el error, marca el campo en rojo y le da el foco. */
+    private void failOn(TextField field, String message) {
         showMessage(message, true);
+        Node container = containerOf(field);
+        if (container != null && !container.getStyleClass().contains("error")) {
+            container.getStyleClass().add("error");
+        }
+        focus(field);
+    }
+
+    /** Da el foco al campo; si es una contraseña mostrada, al campo visible. */
+    private void focus(TextField field) {
+        if (field == passwordField && passwordToggle.isSelected()) {
+            passwordVisibleField.requestFocus();
+        } else if (field == confirmPasswordField && confirmPasswordToggle.isSelected()) {
+            confirmPasswordVisibleField.requestFocus();
+        } else {
+            field.requestFocus();
+        }
+    }
+
+    /** Sube por la jerarquía hasta el HBox con estilo "auth-input" que envuelve el campo. */
+    private Node containerOf(Node node) {
+        Node current = node;
+        while (current != null && !current.getStyleClass().contains("auth-input")) {
+            current = current.getParent();
+        }
+        return current;
     }
 
     private void showMessage(String message, boolean isError) {
-        if (messageLabel == null) {
-            System.out.println(message);
-            return;
-        }
         messageLabel.getStyleClass().removeAll("auth-error", "auth-success");
         messageLabel.getStyleClass().add(isError ? "auth-error" : "auth-success");
         messageLabel.setText(message);
@@ -281,10 +351,13 @@ public class SignUp {
     }
 
     private void clearError() {
-        if (messageLabel != null) {
-            messageLabel.setText("");
-            messageLabel.setManaged(false);
-            messageLabel.setVisible(false);
+        messageLabel.setText("");
+        messageLabel.setManaged(false);
+        messageLabel.setVisible(false);
+        for (Node container : inputContainers) {
+            if (container != null) {
+                container.getStyleClass().remove("error");
+            }
         }
     }
 }

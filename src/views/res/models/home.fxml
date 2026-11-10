@@ -25,6 +25,8 @@
 <?import javafx.scene.shape.Ellipse?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="controllers.Home"
@@ -39,8 +41,12 @@
 
                 <!-- Logo -->
                 <VBox styleClass="logo-box">
-                    <Region styleClass="icon, icon-restaurant, logo-icon"/>
-                    <Label styleClass="logo-text" text="RestauPro"/>
+                    <ImageView styleClass="logo-image" fitWidth="72" preserveRatio="true" smooth="true">
+                        <image>
+                            <Image url="@../images/icon_.png"/>
+                        </image>
+                    </ImageView>
+                    <Label styleClass="logo-text" text="misenplace"/>
                 </VBox>
 
                 <!-- Navigation -->

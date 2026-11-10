@@ -1,228 +1,304 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package controllers;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
+import SignUI_Front.client.UserRESTClient;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
 import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.stage.Stage;
+import singui_front.model.User;
+import singui_front.session.Session;
+import singui_front.util.PasswordPolicy;
 
 /**
- *
  * @author Victor
+ * 
+ * Controlador de la ventana de cambio de contraseña (change_password.fxml).
+ *
+ * Flujo:
+ *   1. Obtiene el usuario de {@link Session}.
+ *   2. Valida: campos obligatorios, contraseña actual correcta, política común
+ *      ({@link PasswordPolicy}), nueva distinta de la actual y confirmación.
+ *   3. Envía el usuario con la nueva contraseña al backend (PUT entities.user/{id}),
+ *      en segundo plano.
+ *   4. Solo si el servidor confirma, actualiza la contraseña en Session.
  */
 public class ChangePassword {
 
-    private static final String ERROR_STYLE = "auth-error";
+    private static final String HOME_FXML    = "/views/res/models/home.fxml";
+    private static final String SIGN_IN_FXML = "/views/res/models/sign_in.fxml";
+
+    private static final String ERROR_STYLE   = "auth-error";
     private static final String SUCCESS_STYLE = "auth-success";
-    private static final String VALID_CHARACTERS =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-        "abcdefghijklmnopqrstuvwxyz" +
-        "0123456789" +
-        "áéíóúÁÉÍÓÚñÑ" +
-        "._-@#$%&*!?";
 
-    // UI FIELDS, view elements
-    @FXML
-    private PasswordField currentPasswordField;
+    // ---------- Nodos del FXML ----------
 
-    @FXML
-    private PasswordField newPasswordField;
+    @FXML private PasswordField currentPasswordField;
+    @FXML private TextField currentPasswordVisibleField;
+    @FXML private ToggleButton currentPasswordToggle;
 
-    @FXML
-    private PasswordField confirmPasswordField;
+    @FXML private PasswordField newPasswordField;
+    @FXML private TextField newPasswordVisibleField;
+    @FXML private ToggleButton newPasswordToggle;
 
-    @FXML
-    private TextField currentPasswordVisibleField;
+    @FXML private PasswordField confirmPasswordField;
 
-    @FXML
-    private TextField newPasswordVisibleField;
+    @FXML private Label strengthLabel;
+    @FXML private Label messageLabel;
+    @FXML private Button updatePasswordButton;
+    @FXML private Button backButton;
 
-    @FXML
-    private ToggleButton currentPasswordToggle;
-
-    @FXML
-    private ToggleButton newPasswordToggle;
-
-    @FXML
-    private Label messageLabel;
-
-    @FXML
-    private Label strengthLabel;
-    
-    @FXML
-    private Button backButton;
-
-    private String email;
+    // ---------- Inicialización ----------
 
     @FXML
     public void initialize() {
-        // Arranca la pantalla change_password
+        // Sin sesión no se puede cambiar la contraseña: volver a Sign In.
+        if (!Session.isLoggedIn()) {
+            Platform.runLater(() -> navigateTo(SIGN_IN_FXML));
+            return;
+        }
+
+        // Mostrar/ocultar contraseña: mismo modelo que SignIn y SignUp.
+        linkPasswordToggle(currentPasswordField, currentPasswordVisibleField, currentPasswordToggle);
+        linkPasswordToggle(newPasswordField, newPasswordVisibleField, newPasswordToggle);
+
+        // Fortaleza en vivo de la nueva contraseña.
+        newPasswordField.textProperty().addListener((obs, oldValue, newValue) -> updatePasswordStrength());
+
+        // Al escribir en cualquier campo, se oculta el mensaje.
+        currentPasswordField.textProperty().addListener((obs, oldValue, newValue) -> clearMessage());
+        newPasswordField.textProperty().addListener((obs, oldValue, newValue) -> clearMessage());
+        confirmPasswordField.textProperty().addListener((obs, oldValue, newValue) -> clearMessage());
+
+        // La etiqueta de fortaleza solo ocupa espacio cuando tiene texto.
+        strengthLabel.managedProperty().bind(strengthLabel.textProperty().isNotEmpty());
+        strengthLabel.visibleProperty().bind(strengthLabel.textProperty().isNotEmpty());
+
         clearMessage();
         strengthLabel.setText("");
-        setupShowPassword();
-        
-        // Fortaleza del password en tiempo real a medida que se escribe
-        newPasswordField.textProperty().addListener((obs, oldV, newV) -> updatePasswordStrength());
-        
-        // Ocultar el mensaje mientras se edita cualquier campo
-        currentPasswordField.textProperty().addListener((obs, o, n) -> clearMessage());
-        newPasswordField.textProperty().addListener((obs, o, n) -> clearMessage());
-        confirmPasswordField.textProperty().addListener((obs, o, n) -> clearMessage());
+        Platform.runLater(() -> currentPasswordField.requestFocus());
     }
 
-    private void setupShowPassword(){
-        // Sincroniza password fiel con text field, y alterna la vista al presionar el botón "show" (el ojo)
-        currentPasswordField.textProperty().bindBidirectional(currentPasswordVisibleField.textProperty());
-        newPasswordField.textProperty().bindBidirectional(newPasswordVisibleField.textProperty());
+    /** Sincroniza PasswordField y TextField y alterna cuál se ve según el ToggleButton. */
+    private void linkPasswordToggle(PasswordField hidden, TextField visible, ToggleButton toggle) {
+        visible.textProperty().bindBidirectional(hidden.textProperty());
 
-        currentPasswordToggle.selectedProperty().addListener((obs, o, show) ->
-        togglePassword(currentPasswordField, currentPasswordVisibleField, show));
+        visible.visibleProperty().bind(toggle.selectedProperty());
+        visible.managedProperty().bind(visible.visibleProperty());
 
-        newPasswordToggle.selectedProperty().addListener((obs, o, show) ->
-        togglePassword(newPasswordField, newPasswordVisibleField, show));
+        hidden.visibleProperty().bind(toggle.selectedProperty().not());
+        hidden.managedProperty().bind(hidden.visibleProperty());
 
+        toggle.selectedProperty().addListener((obs, wasShown, isShown) -> {
+            TextField active = isShown ? visible : hidden;
+            active.requestFocus();
+            active.positionCaret(active.getText().length());
+        });
     }
 
-    private void togglePassword(PasswordField hidden, TextField visible, boolean show) {
-        boolean hadFocus = hidden.isFocused() || visible.isFocused();
-
-        visible.setVisible(show);
-        visible.setManaged(show);
-        hidden.setVisible(!show);
-        hidden.setManaged(!show);
-        
-        // El foco solo se mueve si el campo lo tenía, cabe destacar que PasswordField Hereda de TextField
-        if (hadFocus) { 
-            TextField shown = show ? visible : hidden; 
-            shown.requestFocus();
-            shown.positionCaret(shown.getText().length());
-        }
-    }
-
-    private boolean isValidPassword(String password) {
-    // Valida si hay caracteres no permitidos en el password
-        if (password == null || password.isEmpty()) {
-            return false;
-        }
-
-        for (char character : password.toCharArray()) {
-            if (VALID_CHARACTERS.indexOf(character) == -1) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private String getPasswordStrength(String password) {
-        int upper = 0, lower = 0, digits = 0;
-        for (char c : password.toCharArray()) {
-            if (c >= 'A' && c <= 'Z') upper++;
-            else if (c >= 'a' && c <= 'z') lower++;
-            else if (c >= '0' && c <= '9') digits++;
-        }
-        boolean extra1 = upper > 1 && lower > 1 && digits > 1;
-        boolean extra2 = password.matches(".*[._@$*-].*");
-
-        if (extra1 && extra2) return "Strong";
-        if (extra1 || extra2) return "Medium";
-        return "Weak";
-    }
-
-
-    private void updatePasswordStrength() {
-        String pwd = newPasswordField.getText();
-        if (pwd == null || pwd.isEmpty()) {
-            strengthLabel.setText("");
-        } else if (!isValidPassword(pwd)) {
-            strengthLabel.setText("The password does not meet the requirements.");
-        } else {
-            strengthLabel.setText("Strength: " + getPasswordStrength(pwd));
-        }
-    }
+    // ---------- Acciones ----------
 
     @FXML
     private void handleChangePassword() {
+        clearMessage();
+
+        User user = Session.getCurrentUser();
         String current = currentPasswordField.getText();
         String newPwd  = newPasswordField.getText();
         String confirm = confirmPasswordField.getText();
 
+        // 1. Campos obligatorios
         if (isBlank(current) || isBlank(newPwd) || isBlank(confirm)) {
             showError("All fields are required.");
             return;
         }
-        if (!isValidPassword(newPwd)) {
-            showError("The password does not meet the minimum requirements.");
+
+        // 2. La contraseña actual tiene que ser la del usuario en sesión.
+        //    No se aplica la política: las contraseñas antiguas pueden no cumplirla.
+        if (!current.equals(user.getPassword())) {
+            showError("The current password is incorrect.");
+            currentPasswordField.clear();
+            focus(currentPasswordField, currentPasswordVisibleField, currentPasswordToggle);
             return;
         }
+
+        // 3. Política común: indica exactamente qué falta.
+        List<String> passwordErrors = PasswordPolicy.validate(newPwd, user.getEmail());
+        if (!passwordErrors.isEmpty()) {
+            showError(String.join(" ", passwordErrors));
+            focus(newPasswordField, newPasswordVisibleField, newPasswordToggle);
+            return;
+        }
+
+        // 4. La nueva tiene que ser distinta de la actual.
         if (newPwd.equals(current)) {
             showError("The new password must be different from the current one.");
+            focus(newPasswordField, newPasswordVisibleField, newPasswordToggle);
             return;
         }
+
+        // 5. Confirmación
         if (!newPwd.equals(confirm)) {
             showError("The new passwords do not match.");
+            confirmPasswordField.requestFocus();
             return;
         }
-        showSuccess("Validation confirmed. Change password allowed.");
+
+        saveNewPassword(user, newPwd);
+    }
+
+    /** Limpia el formulario. */
+    @FXML
+    private void handleCancel() {
+        resetForm();
+        clearMessage();
+    }
+
+    /** Vuelve a Home. Home lee el usuario de Session. */
+    @FXML
+    private void handleBack() {
+        navigateTo(HOME_FXML);
+    }
+
+    // ---------- Guardado en el backend ----------
+
+    /**
+     * Envía el usuario con la nueva contraseña al servidor (PUT entities.user/{id}).
+     * Se manda una copia: el usuario de Session solo se modifica si el servidor confirma,
+     * para que nunca quede una contraseña que no está en la base de datos.
+     */
+    private void saveNewPassword(User user, String newPwd) {
+        User updated = copyOf(user);
+        updated.setPassword(newPwd);
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                UserRESTClient client = new UserRESTClient();
+                try {
+                    client.edit_XML(updated, String.valueOf(updated.getId()));
+                    return null;
+                } finally {
+                    client.close();
+                }
+            }
+        };
+
+        // Botón desactivado mientras dura la petición.
+        updatePasswordButton.disableProperty().bind(task.runningProperty());
+
+        task.setOnSucceeded(e -> {
+            user.setPassword(newPwd);          // Session ya refleja la nueva contraseña
+            resetForm();
+            showSuccess("Your password has been updated.");
+        });
+
+        task.setOnFailed(e -> {
+            Throwable ex = task.getException();
+            ex.printStackTrace();
+            if (ex instanceof ProcessingException) {
+                showError("Could not connect to the server.");
+            } else if (ex instanceof WebApplicationException) {
+                int status = ((WebApplicationException) ex).getResponse().getStatus();
+                showError("The server rejected the change (HTTP " + status + ").");
+            } else {
+                showError("An unexpected error occurred. Please try again later.");
+            }
+        });
+
+        Thread thread = new Thread(task, "change-password-request");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    /** Copia de todos los campos del usuario (el PUT sustituye el registro completo). */
+    private User copyOf(User source) {
+        User copy = new User(source.getId());
+        copy.setFirstName(source.getFirstName());
+        copy.setLastName(source.getLastName());
+        copy.setMiddleInitial(source.getMiddleInitial());
+        copy.setEmail(source.getEmail());
+        copy.setPassword(source.getPassword());
+        copy.setStreet(source.getStreet());
+        copy.setCity(source.getCity());
+        copy.setState(source.getState());
+        copy.setZip(source.getZip());
+        copy.setPhone(source.getPhone());
+        return copy;
+    }
+
+    // ---------- Indicador de fortaleza ----------
+
+    /** Muestra qué falta o, si la nueva contraseña es válida, su fortaleza. */
+    private void updatePasswordStrength() {
+        String pwd = newPasswordField.getText();
+        if (pwd == null || pwd.isEmpty()) {
+            strengthLabel.setText("");
+            return;
+        }
+        List<String> errors = PasswordPolicy.validate(pwd, Session.getCurrentUserEmail());
+        strengthLabel.setText(errors.isEmpty()
+                ? "Strength: " + PasswordPolicy.strength(pwd).label()
+                : String.join(" ", errors));
+    }
+
+    // ---------- Navegación ----------
+
+    private void navigateTo(String fxmlPath) {
+        URL resource = getClass().getResource(fxmlPath);
+        if (resource == null) {
+            showError("View not found: " + fxmlPath);
+            return;
+        }
+        try {
+            Parent root = FXMLLoader.load(resource);
+            Stage stage = (Stage) backButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Could not load the view: " + fxmlPath);
+        }
+    }
+
+    // ---------- Utilidades de interfaz ----------
+
+    /** Vacía los campos y vuelve a ocultar las contraseñas. */
+    private void resetForm() {
+        currentPasswordToggle.setSelected(false);
+        newPasswordToggle.setSelected(false);
+        currentPasswordField.clear();
+        newPasswordField.clear();
+        confirmPasswordField.clear();
+        strengthLabel.setText("");
+    }
+
+    /** Da el foco al campo de contraseña que esté visible. */
+    private void focus(PasswordField hidden, TextField visible, ToggleButton toggle) {
+        (toggle.isSelected() ? visible : hidden).requestFocus();
     }
 
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
 
-    @FXML
-    private void handleCancel() {
-        currentPasswordToggle.setSelected(false); // primero: así el listener vuelve a ocultar
-        newPasswordToggle.setSelected(false);
-        currentPasswordField.clear();
-        newPasswordField.clear();
-        confirmPasswordField.clear();
-        strengthLabel.setText("");
-        clearMessage();
-    }
-    
-    @FXML
-    private void handleBack() {
-        try {
-            // 1. Cargar la vista de Home
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/res/models/home.fxml"));
-            Parent root = loader.load();
-
-            // 2. Devolverle el email para que siga mostrando al usuario
-            Home homeController = loader.getController();
-            homeController.setUserData(email);
-
-            // 3. Reemplazar la escena en la misma ventana
-            Stage stage = (Stage) backButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showError("Could not load the home screen.");
-        }
-    }
-
-    public void setEmail(String email) { this.email = email; }
-    public String getEmail()           { return email; }
-
-    public void setUserData(String email) { setEmail(email); } 
-
     private void showError(String message)   { showMessage(message, ERROR_STYLE); }
-    
+
     private void showSuccess(String message) { showMessage(message, SUCCESS_STYLE); }
 
     private void showMessage(String message, String styleClass) {
-        messageLabel.getStyleClass().removeAll(ERROR_STYLE, SUCCESS_STYLE); // nunca los dos a la vez
+        messageLabel.getStyleClass().removeAll(ERROR_STYLE, SUCCESS_STYLE);
         messageLabel.getStyleClass().add(styleClass);
         messageLabel.setText(message);
         messageLabel.setVisible(true);

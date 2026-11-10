@@ -8,52 +8,65 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ToggleButton?>
 
 <StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-           fx:controller="controllers.SignInController"
+           fx:controller="controllers.SignIn"
            styleClass="auth-root" stylesheets="@auth.css"
            prefWidth="900" prefHeight="680">
 
-    <VBox alignment="CENTER" maxWidth="440" maxHeight="-Infinity">
+    <!-- Scroll cuando la ventana es más pequeña que el formulario -->
+    <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="auth-scroll">
+        <!-- Centra el formulario cuando hay espacio de sobra -->
+        <StackPane>
 
-        <Label styleClass="auth-title" text="Welcome Back!"/>
-        <Label styleClass="auth-subtitle" text="Sign in to your account"/>
+            <VBox alignment="CENTER" maxWidth="440" maxHeight="-Infinity">
 
-        <VBox styleClass="auth-card">
+                <Label styleClass="auth-title" text="Welcome Back!"/>
+                <Label styleClass="auth-subtitle" text="Sign in to your account"/>
 
-            <HBox fx:id="emailContainer" styleClass="auth-input">
-                <Region styleClass="icon, icon-email"/>
-                <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                <VBox styleClass="auth-card">
 
-            <HBox fx:id="passwordContainer" styleClass="auth-input" alignment="CENTER_LEFT">
-                <Region styleClass="icon, icon-lock"/>
-                <StackPane HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
-                    <PasswordField fx:id="passwordField" promptText="Password"/>
-                    <TextField fx:id="passwordTextField" promptText="Password" visible="false" managed="false"/>
-                </StackPane>
-                <Button fx:id="togglePasswordButton" styleClass="icon-button, icon-eye"
-                        onAction="#handleTogglePassword" focusTraversable="false"/>
-            </HBox>
+                    <HBox fx:id="emailContainer" styleClass="auth-input">
+                        <Region styleClass="icon, icon-email"/>
+                        <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
+                    </HBox>
 
-            <HBox alignment="CENTER_RIGHT">
-                <Hyperlink fx:id="forgotPasswordLink" styleClass="auth-link" text="Forgot Password?"
-                           onAction="#handleForgotPassword"/>
-            </HBox>
+                    <HBox fx:id="passwordContainer" styleClass="auth-input" alignment="CENTER_LEFT">
+                        <Region styleClass="icon, icon-lock"/>
+                        <StackPane HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
+                            <PasswordField fx:id="passwordField" promptText="Password"/>
+                            <TextField fx:id="passwordVisibleField" promptText="Password"
+                                       managed="false" visible="false"/>
+                        </StackPane>
+                        <ToggleButton fx:id="passwordToggle" styleClass="auth-eye-button" focusTraversable="false">
+                            <graphic>
+                                <Region styleClass="icon, icon-eye"/>
+                            </graphic>
+                        </ToggleButton>
+                    </HBox>
 
-            <Label fx:id="errorLabel" styleClass="auth-error" managed="false" visible="false"/>
+                    <HBox alignment="CENTER_RIGHT">
+                        <Hyperlink fx:id="forgotPasswordLink" styleClass="auth-link" text="Forgot Password?"
+                                   onAction="#handleForgotPassword"/>
+                    </HBox>
 
-            <Button fx:id="signInButton" styleClass="auth-button" text="Sign In"
-                    maxWidth="Infinity" defaultButton="true"
-                    onAction="#handleSignIn"/>
+                    <Label fx:id="errorLabel" styleClass="auth-error" managed="false" visible="false"/>
 
-        </VBox>
+                    <Button fx:id="signInButton" styleClass="auth-button" text="Sign In"
+                            maxWidth="Infinity" defaultButton="true"
+                            onAction="#handleSignIn"/>
 
-        <HBox styleClass="auth-footer">
-            <Label text="Don't have an account?"/>
-            <Hyperlink fx:id="signUpLink" text="Sign Up"
-                       onAction="#handleSignUp"/>
-        </HBox>
-    </VBox>
+                </VBox>
+
+                <HBox styleClass="auth-footer">
+                    <Label text="Don't have an account?"/>
+                    <Hyperlink fx:id="signUpLink" text="Sign Up"
+                               onAction="#handleSignUp"/>
+                </HBox>
+            </VBox>
+        </StackPane>
+    </ScrollPane>
 </StackPane>

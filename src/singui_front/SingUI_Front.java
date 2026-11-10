@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
 
 public class SingUI_Front extends Application {
 
@@ -16,7 +17,9 @@ public class SingUI_Front extends Application {
 
         changeView("sign_in");
 
-        primaryStage.setTitle("SingUI");
+        primaryStage.setTitle("Misenplace - Smart Restaurant");
+        primaryStage.getIcons().add(
+                new Image(SingUI_Front.class.getResourceAsStream("/views/res/images/icon.png")));
         primaryStage.show();
     }
 
