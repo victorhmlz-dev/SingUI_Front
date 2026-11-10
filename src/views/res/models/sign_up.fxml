@@ -6,78 +6,110 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.VBox?>
 
 <StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="controllers.SignUp"
            styleClass="auth-root" stylesheets="@auth.css"
            prefWidth="900" prefHeight="820">
 
-    <VBox alignment="CENTER" maxWidth="440" maxHeight="-Infinity">
+    <!-- Scroll cuando la ventana es más pequeña que el formulario -->
+    <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" styleClass="auth-scroll">
+        <!-- Centra el formulario cuando hay espacio de sobra -->
+        <StackPane>
 
-        <Label styleClass="auth-title" text="Create Account"/>
-        <Label styleClass="auth-subtitle" text="Sign up to get started"/>
+            <VBox alignment="CENTER" maxWidth="440" maxHeight="-Infinity">
 
-        <VBox styleClass="auth-card">
+                <Label styleClass="auth-title" text="Create Account"/>
+                <Label styleClass="auth-subtitle" text="Sign up to get started"/>
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-person"/>
-                <TextField fx:id="firstNameField" promptText="First Name" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                <VBox styleClass="auth-card">
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-person"/>
-                <TextField fx:id="lastNameField" promptText="Last Name" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-person"/>
+                        <TextField fx:id="firstNameField" promptText="First Name" HBox.hgrow="ALWAYS"/>
+                    </HBox>
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-email"/>
-                <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-person"/>
+                        <TextField fx:id="lastNameField" promptText="Last Name" HBox.hgrow="ALWAYS"/>
+                    </HBox>
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-lock"/>
-                <PasswordField fx:id="passwordField" promptText="Password" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-email"/>
+                        <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
+                    </HBox>
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-lock"/>
-                <PasswordField fx:id="confirmPasswordField" promptText="Confirm password" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-lock"/>
+                        <StackPane alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                            <PasswordField fx:id="passwordField" promptText="Password"/>
+                            <TextField fx:id="passwordVisibleField" promptText="Password"
+                                       managed="false" visible="false"/>
+                        </StackPane>
+                        <ToggleButton fx:id="passwordToggle" styleClass="auth-eye-button" focusTraversable="false">
+                            <graphic>
+                                <Region styleClass="icon, icon-eye"/>
+                            </graphic>
+                        </ToggleButton>
+                    </HBox>
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-map"/>
-                <PasswordField fx:id="stateField" promptText="State where you live" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                    <Label fx:id="strengthLabel" styleClass="auth-strength"/>
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-city"/>
-                <PasswordField fx:id="cityField" promptText="In which city?" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-lock"/>
+                        <StackPane alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                            <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password"/>
+                            <TextField fx:id="confirmPasswordVisibleField" promptText="Confirm Password"
+                                       managed="false" visible="false"/>
+                        </StackPane>
+                        <ToggleButton fx:id="confirmPasswordToggle" styleClass="auth-eye-button" focusTraversable="false">
+                            <graphic>
+                                <Region styleClass="icon, icon-eye"/>
+                            </graphic>
+                        </ToggleButton>
+                    </HBox>
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-home"/>
-                <PasswordField fx:id="streetField" promptText="Street address" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-map"/>
+                        <TextField fx:id="stateField" promptText="State where you live" HBox.hgrow="ALWAYS"/>
+                    </HBox>
 
-            <HBox styleClass="auth-input">
-                <Region styleClass="icon, icon-zip"/>
-                <PasswordField fx:id="zipField" promptText="Zip code" HBox.hgrow="ALWAYS"/>
-            </HBox>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-city"/>
+                        <TextField fx:id="cityField" promptText="In which city?" HBox.hgrow="ALWAYS"/>
+                    </HBox>
 
-            <CheckBox fx:id="termsCheckBox" styleClass="auth-checkbox"
-                      text="I agree to the Terms and Privacy Policy"/>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-home"/>
+                        <TextField fx:id="streetField" promptText="Street address" HBox.hgrow="ALWAYS"/>
+                    </HBox>
 
-            <Button fx:id="signUpButton" styleClass="auth-button" text="Sign Up"
-                    maxWidth="Infinity" defaultButton="true"/>
+                    <HBox styleClass="auth-input">
+                        <Region styleClass="icon, icon-zip"/>
+                        <TextField fx:id="zipField" promptText="Zip code" HBox.hgrow="ALWAYS"/>
+                    </HBox>
 
-        </VBox>
+                    <CheckBox fx:id="termsCheckBox" styleClass="auth-checkbox"
+                              text="I agree to the Terms and Privacy Policy"/>
 
-        <HBox styleClass="auth-footer">
-            <Label text="Already have an account?"/>
-            <Hyperlink fx:id="signInLink" text="Sign In"/>
-        </HBox>
-    </VBox>
+                    <Label fx:id="messageLabel" styleClass="auth-message" wrapText="true"/>
+
+                    <Button fx:id="signUpButton" styleClass="auth-button" text="Sign Up"
+                            maxWidth="Infinity" defaultButton="true" onAction="#handleSignUp"/>
+
+                </VBox>
+
+                <HBox styleClass="auth-footer">
+                    <Label text="Already have an account?"/>
+                    <Hyperlink fx:id="signInLink" text="Sign In" onAction="#handleSignIn"/>
+                </HBox>
+            </VBox>
+        </StackPane>
+    </ScrollPane>
 </StackPane>

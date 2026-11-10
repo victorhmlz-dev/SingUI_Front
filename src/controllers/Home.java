@@ -2,6 +2,7 @@ package controllers;
 
 import java.io.IOException;
 import java.net.URL;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,11 +20,21 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import singui_front.model.User;
+import singui_front.session.Session;
+import singui_front.util.ComingSoonPopup;
 
 /**
- * Controller for home.fxml (dashboard).
+ * Controlador del panel principal (home.fxml).
+ *
+ * Los datos del usuario se leen de {@link Session}; no se pasan entre pantallas.
  */
 public class Home {
+
+    private static final String SIGN_IN_FXML         = "/views/res/models/sign_in.fxml";
+    private static final String CHANGE_PASSWORD_FXML = "/views/res/models/change_password.fxml";
+
+    // ---------- Nodos del FXML ----------
 
     @FXML private ToggleGroup navGroup;
     @FXML private ToggleButton navHome;
@@ -34,16 +45,27 @@ public class Home {
     @FXML private MenuButton userMenu;
     @FXML private Label avatarInitials;
 
-    private String currentUserEmail;
+    // ---------- Inicialización ----------
 
     @FXML
     private void initialize() {
-        navGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
-            if (newT == null) {
-                oldT.setSelected(true);
+        // Sin sesión no se puede estar en Home: volver a Sign In.
+        // runLater porque durante initialize() la escena todavía no existe.
+        if (!Session.isLoggedIn()) {
+            Platform.runLater(() -> navigateTo(SIGN_IN_FXML));
+            return;
+        }
+
+        showUser(Session.getCurrentUser());
+
+        // En la barra lateral siempre hay una opción seleccionada.
+        navGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            if (newToggle == null) {
+                oldToggle.setSelected(true);
             }
         });
 
+        // Eje Y en miles: 1000 -> "1k".
         yAxis.setTickLabelFormatter(new StringConverter<Number>() {
             @Override
             public String toString(Number n) {
@@ -52,87 +74,92 @@ public class Home {
 
             @Override
             public Number fromString(String s) {
-                return null;
+                return null;   // el eje no se edita
             }
         });
 
         loadChart();
     }
 
-    public void setUserData(String fullName) {
-        if (fullName == null || fullName.trim().isEmpty()) {
-            return;
-        }
-        this.currentUserEmail = fullName;
+    // ---------- Usuario ----------
 
-        if (userMenu != null) {
-            userMenu.setText(fullName);
-        }
-
-        if (avatarInitials != null) {
-            String initials = extractInitials(fullName);
-            avatarInitials.setText(initials);
-        }
+    /** Pinta nombre completo e iniciales en el menú de usuario. */
+    private void showUser(User user) {
+        String fullName = fullNameOf(user);
+        userMenu.setText(fullName);
+        avatarInitials.setText(initialsOf(user, fullName));
     }
 
-    private String extractInitials(String name) {
-        String[] parts = name.trim().split("\\s+");
-        if (parts.length >= 2) {
-            return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
-        }
-        return name.substring(0, Math.min(2, name.length())).toUpperCase();
+    /** "Nombre Apellido"; si faltan los dos, el email. */
+    private String fullNameOf(User user) {
+        String first = user.getFirstName() == null ? "" : user.getFirstName().trim();
+        String last  = user.getLastName()  == null ? "" : user.getLastName().trim();
+        String full  = (first + " " + last).trim();
+        return full.isEmpty() ? user.getEmail() : full;
     }
+
+    /** Iniciales de nombre y apellido ("John Smith" -> "JS"); si no hay, las 2 primeras letras. */
+    private String initialsOf(User user, String fallback) {
+        String first = user.getFirstName();
+        String last  = user.getLastName();
+        if (first != null && !first.isBlank() && last != null && !last.isBlank()) {
+            return (first.trim().substring(0, 1) + last.trim().substring(0, 1)).toUpperCase();
+        }
+        return fallback.substring(0, Math.min(2, fallback.length())).toUpperCase();
+    }
+
+    // ---------- Gráfica (datos de ejemplo) ----------
 
     private void loadChart() {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        String[] days = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
-        int[] values = {950, 1900, 2350, 2450, 1950, 2550, 2950};
+        String[] days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+        int[] values  = {950, 1900, 2350, 2450, 1950, 2550, 2950};
         for (int i = 0; i < days.length; i++) {
             series.getData().add(new XYChart.Data<>(days[i], values[i]));
         }
         activityChart.getData().setAll(series);
 
+        // Resaltar el último punto de la serie.
         XYChart.Data<String, Number> last = series.getData().get(series.getData().size() - 1);
         if (last.getNode() != null) {
             last.getNode().getStyleClass().add("last-point");
         }
     }
 
-    @FXML 
+    // ---------- Menú de usuario ----------
+
+    /** Abre Change password. ChangePassword obtiene el usuario de Session. */
+    @FXML
     private void handleChangePassword(ActionEvent event) {
-        // Intenta cargar la vista de cambio de contraseña (ajusta el nombre del .fxml si varía en tu proyecto)
-        String fxmlPath = "/views/res/models/change_password.fxml";
+        navigateTo(CHANGE_PASSWORD_FXML);
+    }
+
+    /** Cierra la sesión y vuelve a Sign In. */
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        Session.close();
+        navigateTo(SIGN_IN_FXML);
+    }
+
+    // ---------- Navegación ----------
+
+    /**
+     * Sustituye la escena actual por la del FXML indicado.
+     * El Stage se obtiene desde userMenu porque un MenuItem no es un Node.
+     */
+    private void navigateTo(String fxmlPath) {
         URL resource = getClass().getResource(fxmlPath);
-
         if (resource == null) {
-            fxmlPath = "/src/views/res/models/change_password.fxml";
-            resource = getClass().getResource(fxmlPath);
-        }
-
-        if (resource == null) {
-            showErrorAlert("Error de Navegación", "No se encontró el archivo FXML para cambiar la contraseña en /models/.");
+            showErrorAlert("Navigation error", "View not found: " + fxmlPath);
             return;
         }
-
         try {
-            FXMLLoader loader = new FXMLLoader(resource);
-            Parent root = loader.load();
-
-            // Opcional: Si el controlador de cambio de contraseña requiere recibir el email/usuario actual:
-            Object controller = loader.getController();
-            if (controller != null && currentUserEmail != null) {
-                try {
-                    controller.getClass().getMethod("setUserData", String.class).invoke(controller, currentUserEmail);
-                } catch (Exception ignored) {
-                    // Si el controlador de cambio de contraseña no implementa setUserData, continúa sin error
-                }
-            }
-
+            Parent root = FXMLLoader.load(resource);
             Stage stage = (Stage) userMenu.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (IOException e) {
             e.printStackTrace();
-            showErrorAlert("Error", "Ocurrió un error al cargar la vista de cambio de contraseña.");
+            showErrorAlert("Error", "Could not load the view: " + fxmlPath);
         }
     }
 
@@ -141,46 +168,27 @@ public class Home {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
-        if (userMenu != null && userMenu.getScene() != null) {
+        if (userMenu.getScene() != null) {
             alert.initOwner(userMenu.getScene().getWindow());
         }
         alert.showAndWait();
     }
 
-    @FXML private void handleNavigation(ActionEvent event) { }
-    @FXML private void handleDiscover(ActionEvent event) { }
-    @FXML private void handleNotifications(ActionEvent event) { }
-    @FXML private void handleProfile(ActionEvent event) { }
-    @FXML
-private void handleLogout(ActionEvent event) {
-    String fxmlPath = "/views/res/models/sign_in.fxml";
-    URL resource = getClass().getResource(fxmlPath);
+    // ---------- Acciones pendientes de implementar(Será SCHINCHAN)----------
 
-    if (resource == null) {
-        fxmlPath = "/views/res/models/signIn.fxml";
-        resource = getClass().getResource(fxmlPath);
-    }
+    @FXML private void handleNavigation(ActionEvent event)          { comingSoon(); }
+    @FXML private void handleDiscover(ActionEvent event)            { comingSoon(); }
+    @FXML private void handleNotifications(ActionEvent event)       { comingSoon(); }
+    @FXML private void handleProfile(ActionEvent event)             { comingSoon(); }
+    @FXML private void handleDemo(ActionEvent event)                { comingSoon(); }
+    @FXML private void handleLearnMore(ActionEvent event)           { comingSoon(); }
+    @FXML private void handleKnowMore(ActionEvent event)            { comingSoon(); }
+    @FXML private void handleFeatureReservations(MouseEvent event)  { comingSoon(); }
+    @FXML private void handleFeatureOrders(MouseEvent event)        { comingSoon(); }
+    @FXML private void handleFeatureReports(MouseEvent event)       { comingSoon(); }
+    @FXML private void handleFeatureAll(MouseEvent event)           { comingSoon(); }
 
-    if (resource == null) {
-        showErrorAlert("Error de Navegación", "No se encontró el archivo FXML en /models/.");
-        return;
+    private void comingSoon() {
+        ComingSoonPopup.show(userMenu);
     }
-
-    try {
-        Parent root = FXMLLoader.load(resource);
-        // MenuItem no es un Node, por lo que obtenemos el Stage a través del userMenu
-        Stage stage = (Stage) userMenu.getScene().getWindow();
-        stage.setScene(new Scene(root));
-    } catch (IOException e) {
-        e.printStackTrace();
-        showErrorAlert("Error", "No se pudo volver a la pantalla de inicio de sesión.");
-    }
-}
-    @FXML private void handleDemo(ActionEvent event) { }
-    @FXML private void handleLearnMore(ActionEvent event) { }
-    @FXML private void handleKnowMore(ActionEvent event) { }
-    @FXML private void handleFeatureReservations(MouseEvent event) { }
-    @FXML private void handleFeatureOrders(MouseEvent event) { }
-    @FXML private void handleFeatureReports(MouseEvent event) { }
-    @FXML private void handleFeatureAll(MouseEvent event) { }
 }
