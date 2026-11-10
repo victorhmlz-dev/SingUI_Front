@@ -200,9 +200,10 @@ public class ChangePassword {
         updatePasswordButton.disableProperty().bind(task.runningProperty());
 
         task.setOnSucceeded(e -> {
-            user.setPassword(newPwd);          // Session ya refleja la nueva contraseña
+            user.setPassword(newPwd);// Session ya refleja la nueva contraseña
             resetForm();
             showSuccess("Your password has been updated.");
+            handleBack();
         });
 
         task.setOnFailed(e -> {
