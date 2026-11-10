@@ -25,9 +25,11 @@ import singui_front.session.Session;
 import singui_front.util.ComingSoonPopup;
 
 /**
+ * @author Victor
+ * 
  * Controlador del panel principal (home.fxml).
  *
- * Los datos del usuario se leen de {@link Session}; no se pasan entre pantallas.
+ * Los datos del usuario se leen de {@link Session}.
  */
 public class Home {
 

@@ -242,7 +242,7 @@ public class SignUp {
 
         task.setOnSucceeded(e -> {
             if (task.getValue()) {
-                navigateToSignIn(email);                   // registro correcto
+                navigateToSignIn(email); // registro correcto
             } else {
                 failOn(emailField, "An account with this email already exists.");
             }
