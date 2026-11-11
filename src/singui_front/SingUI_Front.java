@@ -24,10 +24,10 @@ public class SingUI_Front extends Application {
     }
 
     public static void changeView(String view) throws Exception {
-
+        //FIXME: Location is wrong: bad path
         Parent root = FXMLLoader.load(
             SingUI_Front.class.getResource(
-                "../views/res/models/" + view + ".fxml"
+                "/views/res/models/" + view + ".fxml"
             )
         );
 
