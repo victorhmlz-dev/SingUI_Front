@@ -27,7 +27,7 @@ public class SingUI_Front extends Application {
 
         Parent root = FXMLLoader.load(
             SingUI_Front.class.getResource(
-                "../views/res/models/" + view + ".fxml"
+                "/views/res/models/" + view + ".fxml"
             )
         );
 
