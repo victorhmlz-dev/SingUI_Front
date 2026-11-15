@@ -61,7 +61,12 @@ public class ChangePassword {
     @FXML private Button backButton;
 
     // ---------- Inicialización ----------
-
+    /**
+     * @todo Add ActionEvent handler #handleChangePassword to updatePasswordButton 
+     *      using setOnAction  convenience method and a method reference.
+     *      Remember to remove onAction attribute from updatePasswordButton element
+     *      in FXML.
+     */
     @FXML
     public void initialize() {
         // Sin sesión no se puede cambiar la contraseña: volver a Sign In.
@@ -178,6 +183,9 @@ public class ChangePassword {
      * Envía el usuario con la nueva contraseña al servidor (PUT entities.user/{id}).
      * Se manda una copia: el usuario de Session solo se modifica si el servidor confirma,
      * para que nunca quede una contraseña que no está en la base de datos.
+     * @todo Modificar el tratamiento de excepciones para quitar cualquier printStackTrace
+     * y en su lugar mostrar por consola una traza de log de nivel SEVERE con el mismo mensaje
+     * que se muestra al usuario en la ventana.
      */
     private void saveNewPassword(User user, String newPwd) {
         User updated = copyOf(user);
