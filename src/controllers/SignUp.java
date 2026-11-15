@@ -36,9 +36,11 @@ import singui_front.util.PasswordPolicy;
  *   1. Valida todos los campos en el cliente (reglas de contraseña en PasswordPolicy).
  *   2. En segundo plano: comprueba que el email no exista y crea el usuario (POST).
  *      El id lo asigna el backend.
- *   3. Si todo va bien, vuelve a Sign In con el email ya escrito.
+ *   3. Si  va bien, vuelve a Sign In con el email ya escrito.
  *
  * @author teo
+ * @fixme Añadir un campo teléfono al formulario de registro y codificar lo necesario  
+ * en el controlador para que se registre el teléfono en la base de datos .
  */
 public class SignUp {
 
