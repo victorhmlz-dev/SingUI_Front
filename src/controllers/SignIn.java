@@ -107,6 +107,14 @@ public class SignIn {
 
     /**
      * Valida los campos y autentica contra el backend REST.
+     * @todo Modificar el tratamiento de excepciones para tratar de forma diferente 
+     * ProcessingException y WebApplicationException.
+     * Para ProcessingException mostrar en la ventana y sacar en una traza de log de tipo SEVERE 
+     * el mensaje "Server unavailable". 
+     * Para WebApplicationException mostrar en la ventana y sacar en una traza de log de tipo SEVERE 
+     * el mensaje "Internal server error: try again or contact support". 
+     * Para cualquier otro tipo de Exception mostrar en la ventana y sacar en una traza de log 
+     * el mensaje de la excepción obtenido con getMessage(). 
      */
     @FXML
     public void handleSignIn(ActionEvent event) {
