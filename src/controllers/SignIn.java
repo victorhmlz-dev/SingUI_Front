@@ -2,6 +2,7 @@ package controllers;
 
 import SignUI_Front.client.UserRESTClient;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.GenericType;
 import java.io.IOException;
 import java.net.URL;
@@ -25,6 +26,8 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import singui_front.model.User;
 import singui_front.session.Session;
+import java.util.logging.Level;
+
 
 /**
  * @author javi
@@ -146,7 +149,7 @@ public class SignIn {
         }
 
         // 4. Autenticación en segundo plano para no congelar la ventana (SI-04).
-        //    Devuelve el User si las credenciales son correctas, o null si no.
+        //    Devuelve el User si las credenciales son correctas, o null si no.     
         Task<User> task = new Task<>() {
             @Override
             protected User call() {
@@ -162,16 +165,19 @@ public class SignIn {
                     User user = users.get(0);
                     return password.equals(user.getPassword()) ? user : null;
 
-                } catch (NotFoundException e) {
-                    return null;                           // 404: tratado como credenciales incorrectas
-                } finally {
+                }catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Server unavailable", e);
+                }
+
+                    finally {
                     client.close();                        // liberar la conexión siempre
                 }
+                return null;
             }
         };
+        
 
         // El botón queda desactivado mientras dura la petición (SI-04).
-        signInButton.disableProperty().bind(task.runningProperty());
 
         task.setOnSucceeded(e -> {
             User user = task.getValue();
@@ -186,13 +192,15 @@ public class SignIn {
         });
 
         // Error de red o del servidor (SI-10).
-        task.setOnFailed(e -> {
+        task.setOnFailed(w -> {
             passwordField.clear();
             if (task.getException() != null) {
                 task.getException().printStackTrace();
             }
-            showError("An unexpected error occurred. Please try again later.");
+            showError("Internal server error: try again or contact support");
         });
+        
+        
 
         Thread thread = new Thread(task, "rest-auth-thread");
         thread.setDaemon(true);                            // no impide cerrar la aplicación
@@ -285,5 +293,16 @@ public class SignIn {
     public void prefillEmail(String email) {
         emailField.setText(email);
         Platform.runLater(() -> focusPassword()); 
+    }
+
+    private static class LOGGER {
+
+        private static void log(Level SEVERE, String server_unavailable, Exception e) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public LOGGER() {
+           
+        }
     }
 }
