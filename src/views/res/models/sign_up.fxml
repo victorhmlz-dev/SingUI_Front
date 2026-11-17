@@ -42,6 +42,12 @@
                     <Region styleClass="icon, icon-email"/>
                     <TextField fx:id="emailField" promptText="Email" HBox.hgrow="ALWAYS"/>
                 </HBox>
+                
+                <HBox styleClass="auth-input">
+                    <Region styleClass="icon, icon-phone"/>
+                    <TextField fx:id="phoneField" promptText="Phone" HBox.hgrow="ALWAYS"/>
+                </HBox>
+
 
                 <HBox styleClass="auth-input">
                     <Region styleClass="icon, icon-lock"/>

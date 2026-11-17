@@ -28,6 +28,9 @@ import javafx.scene.control.ToggleButton;
 import javafx.stage.Stage;
 import singui_front.model.User;
 import singui_front.util.PasswordPolicy;
+import java.math.BigInteger;
+
+
 
 /**
  * Controlador de la ventana de registro (sign_up.fxml).
@@ -36,14 +39,18 @@ import singui_front.util.PasswordPolicy;
  *   1. Valida todos los campos en el cliente (reglas de contraseña en PasswordPolicy).
  *   2. En segundo plano: comprueba que el email no exista y crea el usuario (POST).
  *      El id lo asigna el backend.
- *   3. Si  va bien, vuelve a Sign In con el email ya escrito.
+ *   3. Si todo va bien, vuelve a Sign In con el email ya escrito.
  *
  * @author teo
- * @fixme Añadir un campo teléfono al formulario de registro y codificar lo necesario  
- * en el controlador para que se registre el teléfono en la base de datos .
+ * 
+ * @Fixme Añadir un campo telefono al formulario de registro y codificar lo necesario en 
+ * el controlador para que se registre el telefono en la base de datos
  */
 public class SignUp {
-
+    
+    private static final Pattern PHONE_PATTERN = 
+            Pattern.compile("^\\d{9,15}$");
+    
     /** Mismo formato de email que SignIn. */
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[A-Za-z]{2,}$");
@@ -55,7 +62,8 @@ public class SignUp {
     @FXML private TextField firstNameField;
     @FXML private TextField lastNameField;
     @FXML private TextField emailField;
-
+    @FXML private TextField phoneField;
+        
     @FXML private PasswordField passwordField;
     @FXML private TextField passwordVisibleField;
     @FXML private ToggleButton passwordToggle;
@@ -68,6 +76,7 @@ public class SignUp {
     @FXML private TextField cityField;
     @FXML private TextField streetField;
     @FXML private TextField zipField;
+    @FXML private BigInteger PhoneNumber;
 
     @FXML private CheckBox termsCheckBox;
     @FXML private Button signUpButton;
@@ -81,7 +90,7 @@ public class SignUp {
     // ---------- Inicialización ----------
 
     @FXML
-    public void initialize() {
+    public void initialize(){ 
         // Mostrar/ocultar contraseña: mismo modelo que SignIn y ChangePassword.
         linkPasswordToggle(passwordField, passwordVisibleField, passwordToggle);
         linkPasswordToggle(confirmPasswordField, confirmPasswordVisibleField, confirmPasswordToggle);
@@ -145,6 +154,7 @@ public class SignUp {
             }
         }
 
+        
         String firstName = firstNameField.getText().trim();
         String lastName  = lastNameField.getText().trim();
         String email     = emailField.getText().trim().toLowerCase();   // siempre en minúsculas
@@ -155,6 +165,7 @@ public class SignUp {
         String street    = streetField.getText().trim();
         String zip       = zipField.getText().trim();
 
+       
         // 2. Email
         if (!EMAIL_PATTERN.matcher(email).matches()) {
             failOn(emailField, "The email format is not valid.");
@@ -238,6 +249,11 @@ public class SignUp {
                 }
             }
         };
+        
+        String phoneRaw = phoneField.getText() == null ? "" : phoneField.getText().trim();
+        if (phoneRaw.isEmpty() || !PHONE_PATTERN.matcher(phoneRaw).matches()){
+            return;
+        }
 
         // Botón desactivado mientras dura la petición.
         signUpButton.disableProperty().bind(task.runningProperty());
@@ -261,7 +277,7 @@ public class SignUp {
             } else {
                 showMessage("An unexpected error occurred. Please try again later.", true);
             }
-        });
+        });  // jdbc/__mysql base datos
 
         Thread thread = new Thread(task, "signup-request");
         thread.setDaemon(true);
@@ -363,3 +379,5 @@ public class SignUp {
         }
     }
 }
+
+
