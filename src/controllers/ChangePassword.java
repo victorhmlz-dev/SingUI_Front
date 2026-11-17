@@ -4,10 +4,15 @@ import SignUI_Front.client.UserRESTClient;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.net.URL;
 import java.util.List;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -42,7 +47,9 @@ public class ChangePassword {
 
     private static final String ERROR_STYLE   = "auth-error";
     private static final String SUCCESS_STYLE = "auth-success";
-
+    
+    private static final Logger LOGGER = Logger.getLogger(ChangePassword.class.getName());
+    
     // ---------- Nodos del FXML ----------
 
     @FXML private PasswordField currentPasswordField;
@@ -61,12 +68,7 @@ public class ChangePassword {
     @FXML private Button backButton;
 
     // ---------- Inicialización ----------
-    /**
-     * @todo Add ActionEvent handler #handleChangePassword to updatePasswordButton 
-     *      using setOnAction  convenience method and a method reference.
-     *      Remember to remove onAction attribute from updatePasswordButton element
-     *      in FXML.
-     */
+
     @FXML
     public void initialize() {
         // Sin sesión no se puede cambiar la contraseña: volver a Sign In.
@@ -86,6 +88,8 @@ public class ChangePassword {
         currentPasswordField.textProperty().addListener((obs, oldValue, newValue) -> clearMessage());
         newPasswordField.textProperty().addListener((obs, oldValue, newValue) -> clearMessage());
         confirmPasswordField.textProperty().addListener((obs, oldValue, newValue) -> clearMessage());
+        
+        updatePasswordButton.setOnAction(this::handleChange);
 
         // La etiqueta de fortaleza solo ocupa espacio cuando tiene texto.
         strengthLabel.managedProperty().bind(strengthLabel.textProperty().isNotEmpty());
@@ -94,6 +98,12 @@ public class ChangePassword {
         clearMessage();
         strengthLabel.setText("");
         Platform.runLater(() -> currentPasswordField.requestFocus());
+    }
+    
+    // ------------- Action -----------------------
+    
+    private void handleChange(Event e){
+        handleChangePassword();
     }
 
     /** Sincroniza PasswordField y TextField y alterna cuál se ve según el ToggleButton. */
@@ -183,9 +193,6 @@ public class ChangePassword {
      * Envía el usuario con la nueva contraseña al servidor (PUT entities.user/{id}).
      * Se manda una copia: el usuario de Session solo se modifica si el servidor confirma,
      * para que nunca quede una contraseña que no está en la base de datos.
-     * @todo Modificar el tratamiento de excepciones para quitar cualquier printStackTrace
-     * y en su lugar mostrar por consola una traza de log de nivel SEVERE con el mismo mensaje
-     * que se muestra al usuario en la ventana.
      */
     private void saveNewPassword(User user, String newPwd) {
         User updated = copyOf(user);
@@ -216,14 +223,16 @@ public class ChangePassword {
 
         task.setOnFailed(e -> {
             Throwable ex = task.getException();
-            ex.printStackTrace();
             if (ex instanceof ProcessingException) {
                 showError("Could not connect to the server.");
+                LOGGER.severe("Could not connect to the server");  
             } else if (ex instanceof WebApplicationException) {
                 int status = ((WebApplicationException) ex).getResponse().getStatus();
-                showError("The server rejected the change (HTTP " + status + ").");
+                showError("The server rejected the change.");
+                LOGGER.severe("The server rejected the change."); 
             } else {
                 showError("An unexpected error occurred. Please try again later.");
+                LOGGER.severe("An unexpected error occurred. Please try again later.");
             }
         });
 
@@ -276,8 +285,8 @@ public class ChangePassword {
             Stage stage = (Stage) backButton.getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (IOException e) {
-            e.printStackTrace();
             showError("Could not load the view: " + fxmlPath);
+            LOGGER.severe(fxmlPath + "Could not load the view:");
         }
     }
 
